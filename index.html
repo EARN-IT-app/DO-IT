@@ -94,6 +94,8 @@ select {
 .pop-box { width: 100%; max-width: 560px; background: var(--card); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .pop-title { font-family: var(--display); font-size: 30px; line-height: 1; margin: 0; }
 .video { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+#closeVideo:not([disabled]) { background: var(--good); color: #fff; }
 .tap { min-height: 76px; font: 400 26px var(--display); letter-spacing: .5px; background: var(--mark); color: #141a2e; }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
@@ -177,7 +179,7 @@ select {
     <div class="video" id="videoSlot"><div id="ytPlayer"></div></div>
     <button class="btn tap" id="tapPlay" type="button">TAP TO JUST DO IT</button>
     <a class="link" href="https://www.youtube.com/watch?v=ZXsQAXx_ao0" target="_blank" rel="noopener">Video not playing? Watch it on YouTube</a>
-    <button class="btn" id="closeVideo" type="button">OK, I'll do it</button>
+    <button class="btn" id="closeVideo" type="button" disabled>Watch the video to unlock</button>
   </div>
 </div>
 
@@ -262,11 +264,44 @@ function buildPlayer() {
     videoId: "ZXsQAXx_ao0",
     host: "https://www.youtube-nocookie.com",
     playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
-    events: { onReady: () => { playerReady = true; } },
+    events: {
+      onReady: () => { playerReady = true; },
+      onStateChange: (e) => { if (e.data === 0) unlockClose(); },
+    },
   });
 }
 window.onYouTubeIframeAPIReady = buildPlayer;
+// The pop-up only closes with its button, and the button stays locked until
+// the video ends (or 70 seconds after the tap, in case the end isn't reported).
+const LOCK_SECONDS = 70;
+let lockTimer = null;
+function lockClose() {
+  clearInterval(lockTimer);
+  $("closeVideo").disabled = true;
+  $("closeVideo").textContent = "Watch the video to unlock";
+}
+function unlockClose() {
+  clearInterval(lockTimer);
+  $("closeVideo").disabled = false;
+  $("closeVideo").textContent = "OK, I'll do it";
+}
+function startLockCountdown() {
+  let left = LOCK_SECONDS;
+  clearInterval(lockTimer);
+  lockTimer = setInterval(() => {
+    // Only count down while the video is actually playing, so pausing doesn't skip it.
+    if (playerReady && player.getPlayerState && player.getPlayerState() !== 1) {
+      $("closeVideo").textContent = "Keep watching to unlock (" + left + "s)";
+      return;
+    }
+    left--;
+    if (left <= 0) return unlockClose();
+    $("closeVideo").textContent = "Unlocks in " + left + "s";
+  }, 1000);
+}
 function openVideo() {
+  lockClose();
+  document.body.style.overflow = "hidden";
   $("videoPop").hidden = false;
   $("tapPlay").hidden = false;
   $("tapPlay").focus();
@@ -274,6 +309,7 @@ function openVideo() {
 }
 $("tapPlay").onclick = () => {
   $("tapPlay").hidden = true;
+  startLockCountdown();
   if (playerReady) {
     player.unMute();
     player.setVolume(100);
@@ -284,12 +320,13 @@ $("tapPlay").onclick = () => {
   }
 };
 function closeVideo() {
+  if ($("closeVideo").disabled) return;
+  document.body.style.overflow = "";
   $("videoPop").hidden = true;
   if (playerReady) player.stopVideo();
   else $("videoSlot").innerHTML = '<div id="ytPlayer"></div>';
 }
 $("closeVideo").onclick = closeVideo;
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("videoPop").hidden) closeVideo(); });
 $("showVideo").checked = store.get("doit-video") !== "off";
 $("showVideo").onchange = (e) => store.set("doit-video", e.target.checked ? "on" : "off");
 if ($("showVideo").checked) openVideo();
