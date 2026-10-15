@@ -1,0 +1,36 @@
+# Turns ios/project.yml into DOIT.xcodeproj (so it opens in Xcode with a
+# double-click), checks that the iPhone app builds, and saves the project.
+name: Build iPhone app
+
+on:
+  push:
+    branches: [main]
+    paths: ["ios/**", ".github/workflows/ios-app.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make the Xcode project
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+      - name: Check that it builds
+        run: |
+          cd ios
+          xcodebuild -project DOIT.xcodeproj -scheme DOIT \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -40
+          test ${PIPESTATUS[0]} -eq 0
+      - name: Save the Xcode project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ios
+          git diff --cached --quiet || git commit -m "Update the Xcode project [skip ci]"
+          git push

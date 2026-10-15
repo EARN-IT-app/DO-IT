@@ -194,7 +194,7 @@ select {
 const OUTDOOR_THINGS = ["car", "truck", "bus", "bicycle", "motorcycle", "traffic light", "stop sign",
   "fire hydrant", "parking meter", "bench", "bird", "horse", "cow", "sheep", "train", "boat", "airplane"];
 const BREAK_KEY = "doit-break-end";
-// Opened by the DO IT app on a Mac or Android (?from=mac / ?from=android): those apps do the
+// Opened inside the DO IT app on iPhone or Android (?from=ios / ?from=android): those apps do the
 // blocking, so the iPhone Shortcuts help is hidden and the break is handed back to the app.
 const FROM = new URLSearchParams(location.search).get("from");
 const APP_KEY = "doit-app";
@@ -219,9 +219,14 @@ let modelPromise = (window.cocoSsd
 
 let timerId = null;
 
-if (FROM === "mac" || FROM === "android") store.set(APP_KEY, FROM);
+if (FROM === "mac" || FROM === "android" || FROM === "ios") store.set(APP_KEY, FROM);
 const DEVICE_APP = store.get(APP_KEY);
 if (DEVICE_APP) { $("quick").hidden = true; $("setup").hidden = true; }
+// iPhone Screen Time only allows breaks of 15 minutes or more.
+if (DEVICE_APP === "ios") {
+  $("minutes").innerHTML = '<option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option>';
+  $("minutes").value = ["15", "30", "45"].includes(store.get("doit-minutes")) ? store.get("doit-minutes") : "15";
+}
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 // Step 2, the motivation video: it pops up after the outdoor photo passes.
