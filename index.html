@@ -115,7 +115,7 @@ select {
 <body>
 <main>
   <h1><span>DO</span><br><span>IT</span></h1>
-  <p class="lede">Before you open that app, get up and prove you're doing what you should be doing.</p>
+  <p class="lede">Before you open that app, get up, go outside, and prove it. Then watch the video. Then you get your break.</p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -126,9 +126,9 @@ select {
   </section>
 
   <section class="card" id="ask">
-    <p class="eyebrow">Your challenge</p>
-    <p class="task" id="taskText">Show me what you're working on.</p>
-    <p class="note" id="hint"></p>
+    <p class="eyebrow">Step 1 of 3</p>
+    <p class="task" id="taskText">Get up and go outside. Show me the sky.</p>
+    <p class="note" id="hint">Point the camera up at the sky, or at anything outside, like a car, a bike, a bench or a stop sign.</p>
     <input type="file" id="photo" accept="image/*" capture="environment">
     <button class="btn" id="snap" type="button">Open camera</button>
     <img id="preview" alt="Your photo" hidden>
@@ -137,28 +137,18 @@ select {
   </section>
 
   <section class="card pop" id="earned" hidden>
-    <p class="eyebrow">You earned a break</p>
+    <p class="eyebrow">Step 3 of 3: your break</p>
     <p class="timer" id="clock">10:00</p>
-    <p class="note">Go back to your app now. When the timer hits zero, put the phone down and get back to it.</p>
-    <button class="btn ghost" id="again" type="button">Start over</button>
+    <p class="note" id="breakNote"></p>
   </section>
 
   <section class="card">
-    <label for="challenge">Change the challenge</label>
-    <select id="challenge">
-      <option value="work">Show me what you're working on</option>
-      <option value="homework">Show me your homework</option>
-      <option value="desk">Stand up and show me your desk</option>
-      <option value="water">Show me a glass of water</option>
-      <option value="outside">Go outside and show me the sky</option>
-    </select>
     <label for="minutes">Break length after you pass</label>
     <select id="minutes">
       <option value="5">5 minutes</option>
       <option value="10" selected>10 minutes</option>
       <option value="15">15 minutes</option>
     </select>
-    <label class="check" for="showVideo"><input type="checkbox" id="showVideo" checked> Play the motivation video when DO IT opens</label>
   </section>
 
   <section class="card" id="setup">
@@ -181,7 +171,7 @@ select {
 <div class="pop-wrap" id="videoPop" role="dialog" aria-modal="true" aria-labelledby="popTitle" hidden>
   <div class="pop-box gate" id="gate">
     <p class="pop-title big" id="popTitle">STOP.</p>
-    <p class="body">Before you go any further, you're watching this.</p>
+    <p class="body">Step 2 of 3. Nice work getting outside. Now you're watching this.</p>
     <button class="btn tap" id="tapPlay" type="button">TAP TO JUST DO IT</button>
   </div>
   <div class="pop-box stage" id="stage">
@@ -195,35 +185,11 @@ select {
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script>
-// Each challenge lists the things the on-phone photo checker must spot.
-// The checker knows everyday objects (the COCO list); "sky" is checked by color instead.
-const CHALLENGES = {
-  work: {
-    text: "Show me what you're working on.",
-    hint: "A book, notebook, laptop, keyboard or computer screen counts.",
-    objects: ["book", "laptop", "keyboard", "mouse", "tv"],
-  },
-  homework: {
-    text: "Show me your homework.",
-    hint: "Show your book, notebook or laptop with the work on it.",
-    objects: ["book", "laptop"],
-  },
-  desk: {
-    text: "Stand up and show me your desk.",
-    hint: "Get the table and what's on it in the photo.",
-    objects: ["dining table", "laptop", "keyboard", "book", "chair", "mouse", "tv"],
-  },
-  water: {
-    text: "Show me a glass of water.",
-    hint: "A glass, cup or bottle counts.",
-    objects: ["cup", "bottle", "wine glass"],
-  },
-  outside: {
-    text: "Go outside and show me the sky.",
-    hint: "Point your camera up so the sky fills the top of the photo.",
-    sky: true,
-  },
-};
+// The challenge: get outside. The photo passes if the top of it looks like sky,
+// or if the on-phone checker (the COCO object list) spots something that lives outdoors.
+const OUTDOOR_THINGS = ["car", "truck", "bus", "bicycle", "motorcycle", "traffic light", "stop sign",
+  "fire hydrant", "parking meter", "bench", "bird", "horse", "cow", "sheep", "train", "boat", "airplane"];
+const BREAK_KEY = "doit-break-end";
 const ADDRESS = location.href.split("#")[0].split("?")[0];
 
 const $ = (id) => document.getElementById(id);
@@ -232,24 +198,8 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
 };
 
-let challenge = store.get("doit-challenge");
-if (!CHALLENGES[challenge]) challenge = "work";
-$("challenge").value = challenge;
 $("minutes").value = store.get("doit-minutes") || "10";
 $("addr").textContent = ADDRESS;
-showChallenge();
-
-function showChallenge() {
-  $("taskText").textContent = CHALLENGES[challenge].text;
-  $("hint").textContent = CHALLENGES[challenge].hint;
-}
-
-$("challenge").onchange = (e) => {
-  challenge = e.target.value;
-  store.set("doit-challenge", challenge);
-  showChallenge();
-  reset();
-};
 $("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
 
 // Start loading the photo checker as soon as the page opens.
@@ -262,7 +212,7 @@ let timerId = null;
 
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
-// Motivation video: pops up every time DO IT opens, unless turned off.
+// Step 2, the motivation video: it pops up after the outdoor photo passes.
 // iPhones only play sound after a tap, so the pop-up opens on one big button.
 // That tap starts the video with sound on, through the YouTube player API.
 let player = null, playerReady = false;
@@ -336,15 +286,12 @@ function closeVideo() {
   $("videoPop").hidden = true;
   if (playerReady) player.stopVideo();
   else $("videoSlot").innerHTML = '<div id="ytPlayer"></div>';
+  startBreak();
 }
 $("closeVideo").onclick = closeVideo;
-$("showVideo").checked = store.get("doit-video") !== "off";
-$("showVideo").onchange = (e) => store.set("doit-video", e.target.checked ? "on" : "off");
-if ($("showVideo").checked) openVideo();
 
 $("snap").onclick = () => $("photo").click();
 $("retry").onclick = () => { $("photo").value = ""; $("photo").click(); };
-$("again").onclick = () => { clearInterval(timerId); $("earned").hidden = true; $("ask").hidden = false; reset(); };
 $("copy").onclick = async () => {
   try {
     await navigator.clipboard.writeText(ADDRESS);
@@ -413,32 +360,22 @@ $("photo").onchange = async () => {
   $("retry").hidden = true;
   say("Checking your photo...", "");
 
-  const c = CHALLENGES[challenge];
   let canvas;
   try { canvas = await loadSmall(file); }
   catch { return fail("That photo couldn't be read. Take a new one."); }
 
-  if (c.sky) {
-    return looksLikeSky(canvas) ? pass("That's the sky. Nice work getting outside.")
-      : fail("I can't see the sky. Go outside and point the camera up.");
-  }
+  if (looksLikeSky(canvas)) return pass("That's the sky. Nice work getting outside.");
 
   const model = await modelPromise;
   if (!model) {
-    // The checker didn't load (no internet?). Trust the person who got up and took the photo.
-    return pass("Photo taken. Nice work getting up.");
+    // The checker didn't load (no internet?), and the sky check didn't pass either.
+    return fail("I can't see the sky. Point the camera up at the sky and try again.");
   }
-  let found;
-  try { found = await model.detect(canvas, 10, 0.4); }
-  catch { return pass("Photo taken. Nice work getting up."); }
-
-  const hit = found.find((p) => c.objects.includes(p.class));
-  if (hit) {
-    const name = hit.class === "tv" ? "screen" : hit.class === "dining table" ? "desk" : hit.class;
-    pass("I see a " + name + ". That counts.");
-  } else {
-    fail("I couldn't spot it. " + c.hint);
-  }
+  let found = [];
+  try { found = await model.detect(canvas, 10, 0.4); } catch {}
+  const hit = found.find((p) => OUTDOOR_THINGS.includes(p.class));
+  if (hit) pass("I see a " + hit.class + " outside. That counts.");
+  else fail("That doesn't look like outside. Go out and point the camera at the sky.");
 };
 
 function fail(msg) {
@@ -448,29 +385,57 @@ function fail(msg) {
 
 function pass(msg) {
   say(msg, "pass");
-  setTimeout(startBreak, 900);
+  setTimeout(openVideo, 900);
 }
 
+// Step 3, the break. Its end time is saved, so opening DO IT again during the
+// break just shows the time left. Once it runs out, DO IT resets to step 1.
 function startBreak() {
+  const end = Date.now() + Number($("minutes").value) * 60000;
+  store.set(BREAK_KEY, String(end));
+  showBreak(end);
+}
+
+function showBreak(end) {
   $("ask").hidden = true;
   $("earned").hidden = false;
   const clock = $("clock");
   clock.classList.remove("up");
-  const end = Date.now() + Number($("minutes").value) * 60000;
+  $("breakNote").textContent = "Go back to your app now. When the timer hits zero, your break is over, and the next time you open the app you start again from step 1.";
   const tick = () => {
     const left = Math.max(0, end - Date.now());
     const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
     clock.textContent = m + ":" + String(s).padStart(2, "0");
     if (left === 0) {
       clearInterval(timerId);
+      store.set(BREAK_KEY, "0");
       clock.textContent = "Time's up";
       clock.classList.add("up");
+      $("breakNote").textContent = "Put the phone down and get back to it. Next time you open the app, you start over from step 1.";
     }
   };
   clearInterval(timerId);
   tick();
   timerId = setInterval(tick, 1000);
 }
+
+function startOver() {
+  clearInterval(timerId);
+  $("earned").hidden = true;
+  $("ask").hidden = false;
+  reset();
+}
+
+// Decide what to show whenever DO IT is opened or brought back on screen.
+function resume() {
+  if (!$("videoPop").hidden) return; // mid-video: stay on the video
+  const end = Number(store.get(BREAK_KEY) || 0);
+  if (end > Date.now()) showBreak(end);
+  else if (!$("earned").hidden) startOver(); // break over: back to step 1
+}
+resume();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
+window.addEventListener("pageshow", (e) => { if (e.persisted) resume(); });
 </script>
 </body>
 </html>
