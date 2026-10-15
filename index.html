@@ -71,6 +71,7 @@ a.btn { text-decoration: none; }
 .btn.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); min-height: 52px; font-size: 16px; }
 .btn:focus-visible, select:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 #photo { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.cam { width: 100%; max-width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #000; }
 #preview { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: var(--line); }
 .verdict { margin: 0; font-size: 18px; font-weight: 600; }
 .verdict.pass { color: var(--good); }
@@ -131,6 +132,9 @@ select {
     <p class="note" id="hint">Point the camera up at the sky, or at anything outside, like a car, a bike, a bench or a stop sign.</p>
     <input type="file" id="photo" accept="image/*" capture="environment">
     <button class="btn" id="snap" type="button">Open camera</button>
+    <video id="cam" class="cam" playsinline muted hidden></video>
+    <button class="btn" id="shoot" type="button" hidden>Take the photo</button>
+    <button class="btn ghost" id="pick" type="button" hidden>Choose a photo instead</button>
     <img id="preview" alt="Your photo" hidden>
     <p class="verdict" id="verdict" hidden></p>
     <button class="btn ghost" id="retry" type="button" hidden>Try another photo</button>
@@ -190,6 +194,11 @@ select {
 const OUTDOOR_THINGS = ["car", "truck", "bus", "bicycle", "motorcycle", "traffic light", "stop sign",
   "fire hydrant", "parking meter", "bench", "bird", "horse", "cow", "sheep", "train", "boat", "airplane"];
 const BREAK_KEY = "doit-break-end";
+// Opened by the DO IT app on a Mac or Android (?from=mac / ?from=android): those apps do the
+// blocking, so the iPhone Shortcuts help is hidden and the break is handed back to the app.
+const FROM = new URLSearchParams(location.search).get("from");
+const APP_KEY = "doit-app";
+const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 const ADDRESS = location.href.split("#")[0].split("?")[0];
 
 const $ = (id) => document.getElementById(id);
@@ -210,6 +219,9 @@ let modelPromise = (window.cocoSsd
 
 let timerId = null;
 
+if (FROM === "mac" || FROM === "android") store.set(APP_KEY, FROM);
+const DEVICE_APP = store.get(APP_KEY);
+if (DEVICE_APP) { $("quick").hidden = true; $("setup").hidden = true; }
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 // Step 2, the motivation video: it pops up after the outdoor photo passes.
@@ -290,8 +302,48 @@ function closeVideo() {
 }
 $("closeVideo").onclick = closeVideo;
 
-$("snap").onclick = () => $("photo").click();
-$("retry").onclick = () => { $("photo").value = ""; $("photo").click(); };
+// Phones open their camera from the photo button. Computers have no such camera
+// screen, so DO IT shows the webcam itself, with a way to pick a photo file instead.
+let camStream = null;
+async function openWebcam() {
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  } catch {
+    return $("photo").click();
+  }
+  $("cam").srcObject = camStream;
+  $("cam").hidden = false;
+  $("shoot").hidden = false;
+  $("pick").hidden = false;
+  $("snap").hidden = true;
+  $("retry").hidden = true;
+  $("verdict").hidden = true;
+  $("preview").hidden = true;
+  await $("cam").play().catch(() => {});
+}
+function stopWebcam() {
+  if (camStream) camStream.getTracks().forEach((t) => t.stop());
+  camStream = null;
+  $("cam").hidden = true;
+  $("shoot").hidden = true;
+  $("pick").hidden = true;
+}
+function takePhoto() {
+  if (IS_TOUCH || !navigator.mediaDevices?.getUserMedia) return $("photo").click();
+  openWebcam();
+}
+$("snap").onclick = takePhoto;
+$("retry").onclick = () => { $("photo").value = ""; takePhoto(); };
+$("pick").onclick = () => { stopWebcam(); $("photo").removeAttribute("capture"); $("photo").click(); };
+$("shoot").onclick = () => {
+  const v = $("cam");
+  const c = document.createElement("canvas");
+  c.width = v.videoWidth || 640;
+  c.height = v.videoHeight || 480;
+  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  stopWebcam();
+  c.toBlob((blob) => blob && checkPhoto(blob), "image/jpeg", 0.9);
+};
 $("copy").onclick = async () => {
   try {
     await navigator.clipboard.writeText(ADDRESS);
@@ -351,9 +403,12 @@ function looksLikeSky(canvas) {
   return skyish / n > 0.6 && (r + g + b) / (3 * n) > 100;
 }
 
-$("photo").onchange = async () => {
+$("photo").onchange = () => {
   const file = $("photo").files[0];
-  if (!file) return;
+  if (file) checkPhoto(file);
+};
+
+async function checkPhoto(file) {
   $("preview").src = URL.createObjectURL(file);
   $("preview").hidden = false;
   $("snap").hidden = true;
@@ -376,7 +431,7 @@ $("photo").onchange = async () => {
   const hit = found.find((p) => OUTDOOR_THINGS.includes(p.class));
   if (hit) pass("I see a " + hit.class + " outside. That counts.");
   else fail("That doesn't look like outside. Go out and point the camera at the sky.");
-};
+}
 
 function fail(msg) {
   say(msg, "fail");
@@ -394,6 +449,8 @@ function startBreak() {
   const end = Date.now() + Number($("minutes").value) * 60000;
   store.set(BREAK_KEY, String(end));
   showBreak(end);
+  // Tell the Mac or Android app to let the blocked apps open during the break.
+  if (DEVICE_APP) location.href = "doit://break?minutes=" + encodeURIComponent($("minutes").value);
 }
 
 function showBreak(end) {
