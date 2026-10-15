@@ -66,6 +66,8 @@ h1 span { background: linear-gradient(transparent 58%, var(--mark) 58%, var(--ma
   background: var(--accent); color: var(--accent-fg);
   font: 700 19px var(--body); cursor: pointer;
 }
+a.btn { text-decoration: none; }
+#setup { scroll-margin-top: 20px; }
 .btn.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); min-height: 52px; font-size: 16px; }
 .btn:focus-visible, select:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 #photo { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -94,6 +96,14 @@ select {
 <main>
   <h1><span>DO</span><br><span>IT</span></h1>
   <p class="lede">Before you open that app, get up and prove you're doing what you should be doing.</p>
+
+  <section class="card quick" id="quick">
+    <p class="eyebrow">Block your apps</p>
+    <p class="body">Pick which apps send you to DO IT. This opens the Shortcuts app, where you set it up.</p>
+    <a class="btn" id="openShortcuts" href="shortcuts://">Open Shortcuts</a>
+    <a class="btn ghost" href="#setup">Show me the steps</a>
+    <button class="btn ghost" id="hideQuick" type="button">I'm all set, hide this</button>
+  </section>
 
   <section class="card" id="ask">
     <p class="eyebrow">Your challenge</p>
@@ -140,6 +150,7 @@ select {
       <li>Tap <b>New Blank Automation</b>, then <b>Add Action</b>. Search for <b>Open URLs</b> and tap it.</li>
       <li>Tap the blue word <b>URL</b>, paste the DO IT address, and tap <b>Done</b>.</li>
     </ol>
+    <a class="btn" href="shortcuts://">Open Shortcuts</a>
     <p class="addr" id="addr"></p>
     <button class="btn ghost" id="copy" type="button">Copy the DO IT address</button>
     <p class="note">Now whenever you open one of those apps, DO IT opens first. The photo check runs on your phone, so your photos never leave it.</p>
@@ -214,6 +225,8 @@ let modelPromise = (window.cocoSsd
 
 let timerId = null;
 
+if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
+$("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 $("snap").onclick = () => $("photo").click();
 $("retry").onclick = () => { $("photo").value = ""; $("photo").click(); };
 $("again").onclick = () => { clearInterval(timerId); $("earned").hidden = true; $("ask").hidden = false; reset(); };
