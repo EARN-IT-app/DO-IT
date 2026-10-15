@@ -94,6 +94,7 @@ select {
 .pop-box { width: 100%; max-width: 560px; background: var(--card); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .pop-title { font-family: var(--display); font-size: 30px; line-height: 1; margin: 0; }
 .video { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+.tap { min-height: 76px; font: 400 26px var(--display); letter-spacing: .5px; background: var(--mark); color: #141a2e; }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
 .check input { width: 22px; height: 22px; accent-color: var(--accent); }
@@ -173,12 +174,14 @@ select {
 <div class="pop-wrap" id="videoPop" role="dialog" aria-modal="true" aria-labelledby="popTitle" hidden>
   <div class="pop-box">
     <p class="pop-title" id="popTitle">JUST DO IT.</p>
-    <div class="video" id="videoSlot"></div>
+    <div class="video" id="videoSlot"><div id="ytPlayer"></div></div>
+    <button class="btn tap" id="tapPlay" type="button">TAP TO JUST DO IT</button>
     <a class="link" href="https://www.youtube.com/watch?v=ZXsQAXx_ao0" target="_blank" rel="noopener">Video not playing? Watch it on YouTube</a>
     <button class="btn" id="closeVideo" type="button">OK, I'll do it</button>
   </div>
 </div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script>
@@ -250,15 +253,40 @@ let timerId = null;
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 // Motivation video: pops up every time DO IT opens, unless turned off.
-// Phones only allow autoplay when muted, so it starts muted; tap the video for sound.
-function openVideo() {
-  $("videoSlot").innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/ZXsQAXx_ao0?autoplay=1&mute=1&playsinline=1&rel=0" title="Shia LaBeouf: Just Do It" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-  $("videoPop").hidden = false;
-  $("closeVideo").focus();
+// iPhones only play sound after a tap, so the pop-up opens on one big button.
+// That tap starts the video with sound on, through the YouTube player API.
+let player = null, playerReady = false;
+function buildPlayer() {
+  if (!window.YT || !YT.Player || player) return;
+  player = new YT.Player("ytPlayer", {
+    videoId: "ZXsQAXx_ao0",
+    host: "https://www.youtube-nocookie.com",
+    playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+    events: { onReady: () => { playerReady = true; } },
+  });
 }
+window.onYouTubeIframeAPIReady = buildPlayer;
+function openVideo() {
+  $("videoPop").hidden = false;
+  $("tapPlay").hidden = false;
+  $("tapPlay").focus();
+  buildPlayer();
+}
+$("tapPlay").onclick = () => {
+  $("tapPlay").hidden = true;
+  if (playerReady) {
+    player.unMute();
+    player.setVolume(100);
+    player.playVideo();
+  } else {
+    // Player not loaded yet: load the plain video with sound, started by this tap.
+    $("videoSlot").innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/ZXsQAXx_ao0?autoplay=1&playsinline=1&rel=0" title="Shia LaBeouf: Just Do It" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  }
+};
 function closeVideo() {
   $("videoPop").hidden = true;
-  $("videoSlot").innerHTML = "";
+  if (playerReady) player.stopVideo();
+  else $("videoSlot").innerHTML = '<div id="ytPlayer"></div>';
 }
 $("closeVideo").onclick = closeVideo;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("videoPop").hidden) closeVideo(); });
