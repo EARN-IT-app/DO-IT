@@ -1,0 +1,656 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02748A43D99C7E44C97FBB5A /* DOITShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		08D580EFECE2F2E53B8C60D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */; };
+		1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
+		5E14786CC8FE012521049894 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C6FB28408A7D2199597B85 /* WebView.swift */; };
+		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
+		8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */; };
+		93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */; };
+		969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9A87AFADECD086A75AC13571 /* DOITShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CAC26B56C62461DEEDFE93D0 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8F34169412DB35E518300EF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4211ECDDA88683198A255199;
+			remoteInfo = DOITMonitor;
+		};
+		D67B032D741D655D6158705C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3248189485E852BBCBD13B1E;
+			remoteInfo = DOITShield;
+		};
+		E9A8A1583BC97C8F68CB747F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E4551F5B7AD627B36369B9F3;
+			remoteInfo = DOITShieldAction;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		42353D72308229567A239390 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */,
+				9A87AFADECD086A75AC13571 /* DOITShield.appex in Embed Foundation Extensions */,
+				02748A43D99C7E44C97FBB5A /* DOITShieldAction.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0EEC29C62787995A5582E2BA /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
+		0F7DBD5A7A6CBD177448BC99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		43C6FB28408A7D2199597B85 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
+		43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EECED60B7F91B1E8DB6207B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E95619B361E2EAED0BB6544 /* Monitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Monitor.entitlements; sourceTree = "<group>"; };
+		7FF8748AE7451C1940718DF8 /* DOITApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DOITApp.swift; sourceTree = "<group>"; };
+		90C119AD25F84932407884E1 /* ShieldAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShieldAction.entitlements; sourceTree = "<group>"; };
+		90F031732A6B5AFC79AE860B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfig.swift; sourceTree = "<group>"; };
+		A6462981646F5292DD39FA26 /* DOIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DOIT.entitlements; sourceTree = "<group>"; };
+		AB0EC15108FA45C51BF7EDE1 /* DOIT.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DOIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C08ABF30980AE21A1823E42E /* Shield.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Shield.entitlements; sourceTree = "<group>"; };
+		C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldActions.swift; sourceTree = "<group>"; };
+		D0A2D88D4AF82E0E2DEA0F03 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F9FCE5AC84C80878B224DF03 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		10E2CD83B346C15AA2810E5D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */,
+				A6462981646F5292DD39FA26 /* DOIT.entitlements */,
+				7FF8748AE7451C1940718DF8 /* DOITApp.swift */,
+				0F7DBD5A7A6CBD177448BC99 /* Info.plist */,
+				43C6FB28408A7D2199597B85 /* WebView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		1735310387F9C4C43CD0FF02 /* Shield */ = {
+			isa = PBXGroup;
+			children = (
+				4EECED60B7F91B1E8DB6207B /* Info.plist */,
+				C08ABF30980AE21A1823E42E /* Shield.entitlements */,
+				9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */,
+			);
+			path = Shield;
+			sourceTree = "<group>";
+		};
+		3881AEFB7B98AC10474F678F /* Monitor */ = {
+			isa = PBXGroup;
+			children = (
+				90F031732A6B5AFC79AE860B /* Info.plist */,
+				7E95619B361E2EAED0BB6544 /* Monitor.entitlements */,
+				F9FCE5AC84C80878B224DF03 /* Monitor.swift */,
+			);
+			path = Monitor;
+			sourceTree = "<group>";
+		};
+		441CA5FA1F3C32EFDC85AD52 = {
+			isa = PBXGroup;
+			children = (
+				10E2CD83B346C15AA2810E5D /* App */,
+				3881AEFB7B98AC10474F678F /* Monitor */,
+				DCC4CCAB7644942E3C6E2B87 /* Shared */,
+				1735310387F9C4C43CD0FF02 /* Shield */,
+				FA75FA9681F0013F1AEDF33E /* ShieldAction */,
+				DB74958A0B9D0620E116DB9A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DB74958A0B9D0620E116DB9A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB0EC15108FA45C51BF7EDE1 /* DOIT.app */,
+				43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */,
+				7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */,
+				ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DCC4CCAB7644942E3C6E2B87 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				0EEC29C62787995A5582E2BA /* Shared.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		FA75FA9681F0013F1AEDF33E /* ShieldAction */ = {
+			isa = PBXGroup;
+			children = (
+				D0A2D88D4AF82E0E2DEA0F03 /* Info.plist */,
+				90C119AD25F84932407884E1 /* ShieldAction.entitlements */,
+				C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */,
+			);
+			path = ShieldAction;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3248189485E852BBCBD13B1E /* DOITShield */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D0B5BE3712D73FCCC798EA8 /* Build configuration list for PBXNativeTarget "DOITShield" */;
+			buildPhases = (
+				F91B7A56ACC87EDE25E79C94 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DOITShield;
+			packageProductDependencies = (
+			);
+			productName = DOITShield;
+			productReference = 7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		4211ECDDA88683198A255199 /* DOITMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E0C3598B0719782E94E31B0C /* Build configuration list for PBXNativeTarget "DOITMonitor" */;
+			buildPhases = (
+				26C6CC133DA303A1009BD00D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DOITMonitor;
+			packageProductDependencies = (
+			);
+			productName = DOITMonitor;
+			productReference = 43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		74C6892DE6F00E1E65E7BAEE /* DOIT */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E781A4542231720A569E3A07 /* Build configuration list for PBXNativeTarget "DOIT" */;
+			buildPhases = (
+				0ADB5C11D9A82974C63D463A /* Sources */,
+				D87E2A61C803B10EE7A96A13 /* Resources */,
+				42353D72308229567A239390 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EE19CE805482B2F15AE40D5A /* PBXTargetDependency */,
+				A730842781E0FCE60BCA1374 /* PBXTargetDependency */,
+				3D28E80CCAB400D8C314D2C6 /* PBXTargetDependency */,
+			);
+			name = DOIT;
+			packageProductDependencies = (
+			);
+			productName = DOIT;
+			productReference = AB0EC15108FA45C51BF7EDE1 /* DOIT.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E4551F5B7AD627B36369B9F3 /* DOITShieldAction */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D2EE1E21C56656AEC939F02E /* Build configuration list for PBXNativeTarget "DOITShieldAction" */;
+			buildPhases = (
+				B5DE19183B6DFC07A8444D10 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DOITShieldAction;
+			packageProductDependencies = (
+			);
+			productName = DOITShieldAction;
+			productReference = ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		961F3E87DBCCDDE3BCBFDE1E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					3248189485E852BBCBD13B1E = {
+						ProvisioningStyle = Automatic;
+					};
+					4211ECDDA88683198A255199 = {
+						ProvisioningStyle = Automatic;
+					};
+					74C6892DE6F00E1E65E7BAEE = {
+						ProvisioningStyle = Automatic;
+					};
+					E4551F5B7AD627B36369B9F3 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 55EAB33E465620529BE7C319 /* Build configuration list for PBXProject "DOIT" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 441CA5FA1F3C32EFDC85AD52;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DB74958A0B9D0620E116DB9A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				74C6892DE6F00E1E65E7BAEE /* DOIT */,
+				4211ECDDA88683198A255199 /* DOITMonitor */,
+				3248189485E852BBCBD13B1E /* DOITShield */,
+				E4551F5B7AD627B36369B9F3 /* DOITShieldAction */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D87E2A61C803B10EE7A96A13 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				08D580EFECE2F2E53B8C60D6 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0ADB5C11D9A82974C63D463A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */,
+				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
+				5E14786CC8FE012521049894 /* WebView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26C6CC133DA303A1009BD00D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A5D0710901634689BEDD61C /* Monitor.swift in Sources */,
+				CAC26B56C62461DEEDFE93D0 /* Shared.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5DE19183B6DFC07A8444D10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F91B7A56ACC87EDE25E79C94 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3D28E80CCAB400D8C314D2C6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E4551F5B7AD627B36369B9F3 /* DOITShieldAction */;
+			targetProxy = E9A8A1583BC97C8F68CB747F /* PBXContainerItemProxy */;
+		};
+		A730842781E0FCE60BCA1374 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3248189485E852BBCBD13B1E /* DOITShield */;
+			targetProxy = D67B032D741D655D6158705C /* PBXContainerItemProxy */;
+		};
+		EE19CE805482B2F15AE40D5A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4211ECDDA88683198A255199 /* DOITMonitor */;
+			targetProxy = 8F34169412DB35E518300EF3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		12C025709B9A64881CC03D82 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		4C94EE2D60D5CD45009E4CEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/DOIT.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4E520113BB8E6EFC07AFD97D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShieldAction/ShieldAction.entitlements;
+				INFOPLIST_FILE = ShieldAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.shieldaction;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		56AD08FD42723609C7D29F6D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A46FDEB3B58BB92D0B4E5934 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Monitor/Monitor.entitlements;
+				INFOPLIST_FILE = Monitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A70D9304017D3ACDE335F547 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Monitor/Monitor.entitlements;
+				INFOPLIST_FILE = Monitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.monitor;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A73EC41D89ACD4F1377D03BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Shield/Shield.entitlements;
+				INFOPLIST_FILE = Shield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B425C3F7E2F5E461D755E74A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/DOIT.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D728A7423E02CD7EEAB9F789 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Shield/Shield.entitlements;
+				INFOPLIST_FILE = Shield/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.shield;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E8B88EA0AA52F4D1DED0D16C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShieldAction/ShieldAction.entitlements;
+				INFOPLIST_FILE = ShieldAction/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.shieldaction;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		55EAB33E465620529BE7C319 /* Build configuration list for PBXProject "DOIT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				56AD08FD42723609C7D29F6D /* Debug */,
+				12C025709B9A64881CC03D82 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8D0B5BE3712D73FCCC798EA8 /* Build configuration list for PBXNativeTarget "DOITShield" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D728A7423E02CD7EEAB9F789 /* Debug */,
+				A73EC41D89ACD4F1377D03BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D2EE1E21C56656AEC939F02E /* Build configuration list for PBXNativeTarget "DOITShieldAction" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4E520113BB8E6EFC07AFD97D /* Debug */,
+				E8B88EA0AA52F4D1DED0D16C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E0C3598B0719782E94E31B0C /* Build configuration list for PBXNativeTarget "DOITMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A70D9304017D3ACDE335F547 /* Debug */,
+				A46FDEB3B58BB92D0B4E5934 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E781A4542231720A569E3A07 /* Build configuration list for PBXNativeTarget "DOIT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C94EE2D60D5CD45009E4CEF /* Debug */,
+				B425C3F7E2F5E461D755E74A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+}
