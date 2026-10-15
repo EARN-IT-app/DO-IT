@@ -1,0 +1,14 @@
+<resources>
+    <style name="DoIt" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorAccent">#2346E0</item>
+        <item name="android:statusBarColor">#EEF1F8</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="DoIt.Stop" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0F1322</item>
+        <item name="android:statusBarColor">#0F1322</item>
+    </style>
+    <style name="DoIt.Invisible" parent="android:Theme.Translucent.NoTitleBar">
+        <item name="android:windowNoDisplay">true</item>
+    </style>
+</resources>

@@ -1,0 +1,36 @@
+# Checks that the Android app builds, and posts a ready-to-install copy on the
+# repository's Releases page (tag: android-latest) for people who don't build it themselves.
+name: Build Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android-app.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Build the app
+        run: gradle -p android assembleDebug
+      - name: Post it on the Releases page
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk DO-IT-for-Android.apk
+          gh release view android-latest >/dev/null 2>&1 || \
+            gh release create android-latest --title "DO IT for Android" \
+              --notes "Download DO-IT-for-Android.apk on your Android phone, tap it, and allow installing it."
+          gh release upload android-latest DO-IT-for-Android.apk --clobber
