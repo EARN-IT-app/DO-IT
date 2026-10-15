@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DO IT</title>
+<meta name="description" content="Get up and take a photo that proves you're working before you open a distracting app.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DO IT">
+<meta name="theme-color" content="#2346e0">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow column, one task at a time, big thumb-sized buttons */
+:root {
+  --bg: #eef1f8;
+  --card: #ffffff;
+  --fg: #141a2e;
+  --muted: #5a6280;
+  --accent: #2346e0;
+  --accent-fg: #ffffff;
+  --mark: #ffd84a;
+  --good: #1d8a4e;
+  --bad: #c2362b;
+  --line: #d6dbea;
+  --display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --body: "Figtree", -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1322; --card: #191e33; --fg: #eef0f8; --muted: #9aa2c0;
+    --accent: #6f8bff; --accent-fg: #0f1322; --mark: #e8c234;
+    --good: #4cc983; --bad: #ff7a6e; --line: #2c3352; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--fg); font-family: var(--body);
+  font-size: 17px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-top: calc(28px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
+main { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 {
+  font-family: var(--display); font-weight: 400; font-size: clamp(64px, 22vw, 104px);
+  line-height: .9; margin: 0; letter-spacing: -1px;
+}
+h1 span { background: linear-gradient(transparent 58%, var(--mark) 58%, var(--mark) 92%, transparent 92%); padding: 0 4px; }
+.lede { margin: 0; color: var(--muted); }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  padding: 22px; display: flex; flex-direction: column; gap: 16px;
+}
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+.task { font-family: var(--display); font-size: 26px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 60px; border: 0; border-radius: 14px;
+  background: var(--accent); color: var(--accent-fg);
+  font: 700 19px var(--body); cursor: pointer;
+}
+.btn.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); min-height: 52px; font-size: 16px; }
+.btn:focus-visible, select:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+#photo { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+#preview { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: var(--line); }
+.verdict { margin: 0; font-size: 18px; font-weight: 600; }
+.verdict.pass { color: var(--good); }
+.verdict.fail { color: var(--bad); }
+.timer { font-family: var(--display); font-size: 56px; line-height: 1; margin: 0; font-variant-numeric: tabular-nums; color: var(--good); }
+.timer.up { color: var(--bad); }
+label { font-weight: 600; font-size: 15px; }
+select {
+  width: 100%; min-height: 50px; border-radius: 12px; border: 2px solid var(--line);
+  background: var(--card); color: var(--fg); font: 16px var(--body); padding: 0 12px;
+}
+.note { margin: 0; color: var(--muted); font-size: 14px; }
+.body { margin: 0; }
+.steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.addr { margin: 0; padding: 12px; border-radius: 10px; background: var(--bg); font-weight: 700; word-break: break-all; user-select: all; -webkit-user-select: all; }
+@media (prefers-reduced-motion: no-preference) {
+  .pop { animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: scale(.96); opacity: .4; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<main>
+  <h1><span>DO</span><br><span>IT</span></h1>
+  <p class="lede">Before you open that app, get up and prove you're doing what you should be doing.</p>
+
+  <section class="card" id="ask">
+    <p class="eyebrow">Your challenge</p>
+    <p class="task" id="taskText">Show me what you're working on.</p>
+    <p class="note" id="hint"></p>
+    <input type="file" id="photo" accept="image/*" capture="environment">
+    <button class="btn" id="snap" type="button">Open camera</button>
+    <img id="preview" alt="Your photo" hidden>
+    <p class="verdict" id="verdict" hidden></p>
+    <button class="btn ghost" id="retry" type="button" hidden>Try another photo</button>
+  </section>
+
+  <section class="card pop" id="earned" hidden>
+    <p class="eyebrow">You earned a break</p>
+    <p class="timer" id="clock">10:00</p>
+    <p class="note">Go back to your app now. When the timer hits zero, put the phone down and get back to it.</p>
+    <button class="btn ghost" id="again" type="button">Start over</button>
+  </section>
+
+  <section class="card">
+    <label for="challenge">Change the challenge</label>
+    <select id="challenge">
+      <option value="work">Show me what you're working on</option>
+      <option value="homework">Show me your homework</option>
+      <option value="desk">Stand up and show me your desk</option>
+      <option value="water">Show me a glass of water</option>
+      <option value="outside">Go outside and show me the sky</option>
+    </select>
+    <label for="minutes">Break length after you pass</label>
+    <select id="minutes">
+      <option value="5">5 minutes</option>
+      <option value="10" selected>10 minutes</option>
+      <option value="15">15 minutes</option>
+    </select>
+  </section>
+
+  <section class="card" id="setup">
+    <p class="eyebrow">Pick the apps to block</p>
+    <p class="body">You choose the apps in your iPhone's Shortcuts app. Do this once:</p>
+    <ol class="steps">
+      <li>Open the <b>Shortcuts</b> app. Tap <b>Automation</b> at the bottom, then the <b>+</b> button.</li>
+      <li>Tap <b>App</b>, then <b>Choose</b>. Pick the apps that distract you, like TikTok or Instagram. Tap <b>Done</b>.</li>
+      <li>Choose <b>Run Immediately</b> and tap <b>Next</b>.</li>
+      <li>Tap <b>New Blank Automation</b>, then <b>Add Action</b>. Search for <b>Open URLs</b> and tap it.</li>
+      <li>Tap the blue word <b>URL</b>, paste the DO IT address, and tap <b>Done</b>.</li>
+    </ol>
+    <p class="addr" id="addr"></p>
+    <button class="btn ghost" id="copy" type="button">Copy the DO IT address</button>
+    <p class="note">Now whenever you open one of those apps, DO IT opens first. The photo check runs on your phone, so your photos never leave it.</p>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+// Each challenge lists the things the on-phone photo checker must spot.
+// The checker knows everyday objects (the COCO list); "sky" is checked by color instead.
+const CHALLENGES = {
+  work: {
+    text: "Show me what you're working on.",
+    hint: "A book, notebook, laptop, keyboard or computer screen counts.",
+    objects: ["book", "laptop", "keyboard", "mouse", "tv"],
+  },
+  homework: {
+    text: "Show me your homework.",
+    hint: "Show your book, notebook or laptop with the work on it.",
+    objects: ["book", "laptop"],
+  },
+  desk: {
+    text: "Stand up and show me your desk.",
+    hint: "Get the table and what's on it in the photo.",
+    objects: ["dining table", "laptop", "keyboard", "book", "chair", "mouse", "tv"],
+  },
+  water: {
+    text: "Show me a glass of water.",
+    hint: "A glass, cup or bottle counts.",
+    objects: ["cup", "bottle", "wine glass"],
+  },
+  outside: {
+    text: "Go outside and show me the sky.",
+    hint: "Point your camera up so the sky fills the top of the photo.",
+    sky: true,
+  },
+};
+const ADDRESS = location.href.split("#")[0].split("?")[0];
+
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+
+let challenge = store.get("doit-challenge");
+if (!CHALLENGES[challenge]) challenge = "work";
+$("challenge").value = challenge;
+$("minutes").value = store.get("doit-minutes") || "10";
+$("addr").textContent = ADDRESS;
+showChallenge();
+
+function showChallenge() {
+  $("taskText").textContent = CHALLENGES[challenge].text;
+  $("hint").textContent = CHALLENGES[challenge].hint;
+}
+
+$("challenge").onchange = (e) => {
+  challenge = e.target.value;
+  store.set("doit-challenge", challenge);
+  showChallenge();
+  reset();
+};
+$("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
+
+// Start loading the photo checker as soon as the page opens.
+let modelPromise = (window.cocoSsd
+  ? cocoSsd.load({ base: "lite_mobilenet_v2" })
+  : Promise.reject(new Error("checker missing"))
+).catch(() => null);
+
+let timerId = null;
+
+$("snap").onclick = () => $("photo").click();
+$("retry").onclick = () => { $("photo").value = ""; $("photo").click(); };
+$("again").onclick = () => { clearInterval(timerId); $("earned").hidden = true; $("ask").hidden = false; reset(); };
+$("copy").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(ADDRESS);
+    $("copy").textContent = "Copied. Now paste it in Shortcuts.";
+  } catch {
+    const r = document.createRange(); r.selectNodeContents($("addr"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    $("copy").textContent = "Press and hold the address above, then tap Copy.";
+  }
+};
+
+function reset() {
+  $("preview").hidden = true;
+  $("verdict").hidden = true;
+  $("retry").hidden = true;
+  $("snap").hidden = false;
+  $("photo").value = "";
+}
+
+function say(text, kind) {
+  const v = $("verdict");
+  v.textContent = text;
+  v.className = "verdict" + (kind ? " " + kind : "");
+  v.hidden = false;
+}
+
+// Draw the photo small so checking is fast on a phone.
+function loadSmall(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 640 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      resolve(c);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Sky check: the top third of the photo should be bright and blue-ish or overcast grey,
+// with little detail (no ceiling lights, walls with pictures, and so on).
+function looksLikeSky(canvas) {
+  const ctx = canvas.getContext("2d");
+  const h = Math.max(1, Math.floor(canvas.height / 3));
+  const { data } = ctx.getImageData(0, 0, canvas.width, h);
+  let r = 0, g = 0, b = 0, n = 0, skyish = 0;
+  for (let i = 0; i < data.length; i += 16) {
+    const R = data[i], G = data[i + 1], B = data[i + 2];
+    r += R; g += G; b += B; n++;
+    const bright = (R + G + B) / 3;
+    if ((B >= R && B >= G - 10 && bright > 90) || (bright > 170 && Math.abs(R - B) < 30)) skyish++;
+  }
+  return skyish / n > 0.6 && (r + g + b) / (3 * n) > 100;
+}
+
+$("photo").onchange = async () => {
+  const file = $("photo").files[0];
+  if (!file) return;
+  $("preview").src = URL.createObjectURL(file);
+  $("preview").hidden = false;
+  $("snap").hidden = true;
+  $("retry").hidden = true;
+  say("Checking your photo...", "");
+
+  const c = CHALLENGES[challenge];
+  let canvas;
+  try { canvas = await loadSmall(file); }
+  catch { return fail("That photo couldn't be read. Take a new one."); }
+
+  if (c.sky) {
+    return looksLikeSky(canvas) ? pass("That's the sky. Nice work getting outside.")
+      : fail("I can't see the sky. Go outside and point the camera up.");
+  }
+
+  const model = await modelPromise;
+  if (!model) {
+    // The checker didn't load (no internet?). Trust the person who got up and took the photo.
+    return pass("Photo taken. Nice work getting up.");
+  }
+  let found;
+  try { found = await model.detect(canvas, 10, 0.4); }
+  catch { return pass("Photo taken. Nice work getting up."); }
+
+  const hit = found.find((p) => c.objects.includes(p.class));
+  if (hit) {
+    const name = hit.class === "tv" ? "screen" : hit.class === "dining table" ? "desk" : hit.class;
+    pass("I see a " + name + ". That counts.");
+  } else {
+    fail("I couldn't spot it. " + c.hint);
+  }
+};
+
+function fail(msg) {
+  say(msg, "fail");
+  $("retry").hidden = false;
+}
+
+function pass(msg) {
+  say(msg, "pass");
+  setTimeout(startBreak, 900);
+}
+
+function startBreak() {
+  $("ask").hidden = true;
+  $("earned").hidden = false;
+  const clock = $("clock");
+  clock.classList.remove("up");
+  const end = Date.now() + Number($("minutes").value) * 60000;
+  const tick = () => {
+    const left = Math.max(0, end - Date.now());
+    const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+    clock.textContent = m + ":" + String(s).padStart(2, "0");
+    if (left === 0) {
+      clearInterval(timerId);
+      clock.textContent = "Time's up";
+      clock.classList.add("up");
+    }
+  };
+  clearInterval(timerId);
+  tick();
+  timerId = setInterval(tick, 1000);
+}
+</script>
+</body>
+</html>
