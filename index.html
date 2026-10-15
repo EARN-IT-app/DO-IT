@@ -86,6 +86,18 @@ select {
 .body { margin: 0; }
 .steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
 .addr { margin: 0; padding: 12px; border-radius: 10px; background: var(--bg); font-weight: 700; word-break: break-all; user-select: all; -webkit-user-select: all; }
+.pop-wrap {
+  position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 12, 24, .82);
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.pop-box { width: 100%; max-width: 560px; background: var(--card); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.pop-title { font-family: var(--display); font-size: 30px; line-height: 1; margin: 0; }
+.video { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+.video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.check { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+.check input { width: 22px; height: 22px; accent-color: var(--accent); }
+.link { color: var(--accent); font-weight: 700; text-align: center; }
 @media (prefers-reduced-motion: no-preference) {
   .pop { animation: pop .35s ease-out; }
   @keyframes pop { from { transform: scale(.96); opacity: .4; } to { transform: none; opacity: 1; } }
@@ -138,6 +150,7 @@ select {
       <option value="10" selected>10 minutes</option>
       <option value="15">15 minutes</option>
     </select>
+    <label class="check" for="showVideo"><input type="checkbox" id="showVideo" checked> Play the motivation video when DO IT opens</label>
   </section>
 
   <section class="card" id="setup">
@@ -156,6 +169,15 @@ select {
     <p class="note">Now whenever you open one of those apps, DO IT opens first. The photo check runs on your phone, so your photos never leave it.</p>
   </section>
 </main>
+
+<div class="pop-wrap" id="videoPop" role="dialog" aria-modal="true" aria-labelledby="popTitle" hidden>
+  <div class="pop-box">
+    <p class="pop-title" id="popTitle">JUST DO IT.</p>
+    <div class="video" id="videoSlot"></div>
+    <a class="link" href="https://www.youtube.com/watch?v=ZXsQAXx_ao0" target="_blank" rel="noopener">Video not playing? Watch it on YouTube</a>
+    <button class="btn" id="closeVideo" type="button">OK, I'll do it</button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
@@ -227,6 +249,23 @@ let timerId = null;
 
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
+// Motivation video: pops up every time DO IT opens, unless turned off.
+// Phones only allow autoplay when muted, so it starts muted; tap the video for sound.
+function openVideo() {
+  $("videoSlot").innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/ZXsQAXx_ao0?autoplay=1&mute=1&playsinline=1&rel=0" title="Shia LaBeouf: Just Do It" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  $("videoPop").hidden = false;
+  $("closeVideo").focus();
+}
+function closeVideo() {
+  $("videoPop").hidden = true;
+  $("videoSlot").innerHTML = "";
+}
+$("closeVideo").onclick = closeVideo;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("videoPop").hidden) closeVideo(); });
+$("showVideo").checked = store.get("doit-video") !== "off";
+$("showVideo").onchange = (e) => store.set("doit-video", e.target.checked ? "on" : "off");
+if ($("showVideo").checked) openVideo();
+
 $("snap").onclick = () => $("photo").click();
 $("retry").onclick = () => { $("photo").value = ""; $("photo").click(); };
 $("again").onclick = () => { clearInterval(timerId); $("earned").hidden = true; $("ask").hidden = false; reset(); };
