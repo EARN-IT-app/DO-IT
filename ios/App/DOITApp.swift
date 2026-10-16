@@ -185,6 +185,9 @@ struct TodayView: View {
     @State private var settings = false
     @State private var changeAfterSettings = false
     @AppStorage("name", store: shared) private var name = ""
+    @AppStorage("layout-order", store: shared) private var layoutOrder = ""
+    @AppStorage("layout-hidden", store: shared) private var layoutHidden = ""
+    @AppStorage("layout-chips", store: shared) private var layoutChips = true
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
@@ -218,19 +221,22 @@ struct TodayView: View {
 
                 todayCard
                 // Shortcuts under the ring: each jumps to its settings below.
-                HStack(spacing: 8) {
-                    chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
-                    chip("moon.fill", "Bedtime", bedtime ? "On · 10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
-                    chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
-                    chip("figure.flexibility", "Stretch", "Morning") { stretching = true }
+                if layoutChips {
+                    HStack(spacing: 8) {
+                        if shown.contains("focus") {
+                            chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
+                        }
+                        if shown.contains("bedtime") {
+                            chip("moon.fill", "Bedtime", bedtime ? "On · 10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
+                        }
+                        if shown.contains("alarm") {
+                            chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
+                        }
+                        chip("figure.flexibility", "Stretch", "Morning") { stretching = true }
+                    }
                 }
-                focusCard.id("focus")
-                homeworkCard
-                goalCard
-                opensCard
-                weekCard
-                bedtimeCard.id("bedtime")
-                alarmCard.id("alarm")
+                // The cards, in the order the person picked in Settings > Home screen.
+                ForEach(shown, id: \.self) { homeCard($0) }
 
                 Button(action: change) {
                     Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
@@ -269,6 +275,21 @@ struct TodayView: View {
         }
         .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
             Button("OK", role: .cancel) {}
+        }
+    }
+
+    private var shown: [String] { Layout.shown(order: layoutOrder, hidden: layoutHidden) }
+
+    @ViewBuilder private func homeCard(_ id: String) -> some View {
+        switch id {
+        case "focus": focusCard
+        case "homework": homeworkCard
+        case "goal": goalCard
+        case "opens": opensCard
+        case "week": weekCard
+        case "bedtime": bedtimeCard
+        case "alarm": alarmCard
+        default: EmptyView()
         }
     }
 

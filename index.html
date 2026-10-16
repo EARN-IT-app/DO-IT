@@ -138,6 +138,13 @@ body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed
 .opens { font: 400 56px/1 var(--display); margin: 0; }
 .gear { background: #ffffff14; border: 1px solid #ffffff1a; color: var(--fg); width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; }
 .topright { display: flex; gap: 10px; align-items: center; }
+/* Home screen layout picked in Settings. */
+.userhide { display: none !important; }
+.chiprow { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.lrow { display: flex; align-items: center; gap: 8px; }
+.lrow .switch { flex: 1; }
+.mv { background: #ffffff14; border: 1px solid #ffffff1a; color: var(--fg); width: 40px; height: 40px; border-radius: 12px; font-size: 18px; cursor: pointer; flex: none; }
+.mv[disabled] { opacity: .3; cursor: default; }
 #settings { position: fixed; inset: 0; z-index: 80; background: var(--bg); overflow-y: auto;
   padding: max(20px, env(safe-area-inset-top)) 16px max(30px, env(safe-area-inset-bottom)); }
 #settings .in { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
@@ -358,6 +365,14 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
         <label class="switch"><span><span class="body">Alarm beeps</span></span><input type="checkbox" id="setSound" role="switch"></label>
         <label class="switch"><span><span class="body">Vibration</span></span><input type="checkbox" id="setVibrate" role="switch"></label>
         <label class="switch"><span><span class="body">Motivational quotes</span></span><input type="checkbox" id="setQuotes" role="switch"></label>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Home screen</p>
+        <label class="switch"><span><span class="body">Shortcut buttons under the ring</span></span><input type="checkbox" id="setChips" role="switch"></label>
+        <div id="layoutList"></div>
+        <button class="btn ghost" id="layoutReset" type="button">Reset the layout</button>
+        <p class="note">Turn cards off or move them up and down. Hiding a card doesn't turn it off. Your alarm and locks still work.</p>
       </section>
 
       <section class="card">
@@ -856,6 +871,52 @@ $("setReset").onclick = () => {
   location.reload();
 };
 applySettings();
+
+// Home screen layout: which cards show, and in what order.
+const CARDS = [["focusCard", "Focus mode"], ["homeworkCard", "Homework lock"], ["goalCard", "Tomorrow's goal"], ["opensCard", "App checker"],
+  ["stretchCard", "Morning stretches"], ["weekCard", "This week"], ["bedCard", "Bedtime lock"], ["alarmCard", "Morning alarm"]];
+function layout() {
+  let l = {};
+  try { l = JSON.parse(store.get("doit-layout") || "{}"); } catch {}
+  const ids = CARDS.map((c) => c[0]);
+  const order = (l.order || []).filter((id) => ids.includes(id));
+  return { order: order.concat(ids.filter((id) => !order.includes(id))), hide: l.hide || [], chips: l.chips !== false };
+}
+function saveLayout(l) { store.set("doit-layout", JSON.stringify(l)); applyLayout(); showLayout(); }
+function applyLayout() {
+  const l = layout();
+  for (const id of l.order) {
+    $("settings").before($(id));
+    $(id).classList.toggle("userhide", l.hide.includes(id));
+  }
+  document.querySelector(".chiprow").classList.toggle("userhide", !l.chips);
+  document.querySelectorAll(".chiprow .chip").forEach((c) => c.classList.toggle("userhide", l.hide.includes(c.dataset.go)));
+}
+function showLayout() {
+  const l = layout(), list = $("layoutList");
+  $("setChips").checked = l.chips;
+  list.textContent = "";
+  l.order.forEach((id, i) => {
+    const name = CARDS.find((c) => c[0] === id)[1];
+    const row = document.createElement("div");
+    row.className = "lrow";
+    row.innerHTML = '<label class="switch"><span class="body"></span><input type="checkbox" role="switch"></label>' +
+      '<button class="mv" type="button">↑</button><button class="mv" type="button">↓</button>';
+    row.querySelector(".body").textContent = name;
+    const box = row.querySelector("input"), [up, down] = row.querySelectorAll(".mv");
+    box.checked = !l.hide.includes(id);
+    box.onchange = () => { l.hide = l.hide.filter((h) => h !== id).concat(box.checked ? [] : [id]); saveLayout(l); };
+    up.disabled = i === 0; down.disabled = i === l.order.length - 1;
+    up.setAttribute("aria-label", "Move " + name + " up"); down.setAttribute("aria-label", "Move " + name + " down");
+    const move = (by) => { [l.order[i], l.order[i + by]] = [l.order[i + by], l.order[i]]; saveLayout(l); };
+    up.onclick = () => move(-1); down.onclick = () => move(1);
+    list.append(row);
+  });
+}
+$("setChips").onchange = (e) => { const l = layout(); l.chips = e.target.checked; saveLayout(l); };
+$("layoutReset").onclick = () => { store.set("doit-layout", "{}"); applyLayout(); showLayout(); };
+$("openSettings").addEventListener("click", showLayout);
+applyLayout();
 
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
