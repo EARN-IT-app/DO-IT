@@ -1,0 +1,69 @@
+# Runs the iPhone app on a test iPhone (the simulator) and records a walkthrough:
+# setup, the home screen, Settings, stretches and the alarm screen.
+# Saves ios/screenshots/walkthrough.mp4.
+# The simulator can't record sound, so the video is silent.
+name: iPhone app walkthrough
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  video:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Build for the test iPhone
+        run: |
+          brew install xcodegen ffmpeg
+          cd ios && xcodegen generate
+          xcodebuild build-for-testing -project DOIT.xcodeproj -scheme DOIT \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO | tail -5
+      - name: Record the video
+        run: |
+          cd ios
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone 16 Pro') or x['name'].startswith('iPhone 17 Pro')))")
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl status_bar "$DEVICE" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+          xcrun simctl ui "$DEVICE" appearance dark
+          ID=io.github.wonderbread4912.doit
+          xcrun simctl install "$DEVICE" build/Build/Products/Debug-iphonesimulator/DOIT.app
+          mkdir -p screenshots
+          xcrun simctl io "$DEVICE" recordVideo --codec=h264 --force raw.mp4 &
+          REC=$!
+          START=$(date +%s)
+          xcodebuild test-without-building -project DOIT.xcodeproj -scheme DOIT -destination "id=$DEVICE" \
+            -derivedDataPath build -only-testing:DOITUITests/WalkthroughTests > test.log 2>&1 &
+          TEST=$!
+          # The test iPhone takes minutes to start the test. Note when DO IT opens, to cut that part.
+          OPENED=0
+          while kill -0 $TEST 2>/dev/null; do
+            if [ $OPENED = 0 ] && xcrun simctl spawn "$DEVICE" launchctl list | grep -q "UIKitApplication:$ID\["; then
+              OPENED=$(( $(date +%s) - START - 2 )); echo "DO IT opened after $OPENED seconds"
+            fi
+            sleep 2
+          done
+          wait $TEST || true
+          grep -E "Test Case|error:" test.log || true
+          kill -INT $REC; wait $REC || true
+          [ $OPENED -lt 0 ] && OPENED=0
+          ffmpeg -y -ss $OPENED -i raw.mp4 -vf "scale=590:-2,fps=30" -c:v libx264 -preset veryfast -pix_fmt yuv420p -crf 28 -movflags +faststart -an screenshots/walkthrough.mp4
+          ls -la screenshots
+      - name: Save the video
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ios/screenshots
+          git commit -m "Update iPhone app walkthrough video [skip ci]"
+          git pull --rebase --autostash origin main
+          git push
