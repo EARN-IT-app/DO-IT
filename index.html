@@ -213,20 +213,53 @@ body.alarm-on #ringing .task { font-size: 52px; line-height: 1.05; }
 body.alarm-on #ringing .note { font-size: 30px; }
 @keyframes breathe { 0% { transform: perspective(600px) scale(1) rotateX(0deg); } 50% { transform: perspective(600px) scale(1.06) rotateX(-180deg); } 100% { transform: perspective(600px) scale(1) rotateX(-360deg); } }
 body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center; }
+/* Glow look with 4 tabs, to match the iPhone app. */
+body { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+body:not([data-tab="today"]) [data-tab="today"],
+body:not([data-tab="focus"]) [data-tab="focus"],
+body:not([data-tab="week"]) [data-tab="week"],
+body:not([data-tab="me"]) [data-tab="me"] { display: none !important; }
+.tabtitle { font: 400 34px var(--display); margin: 8px 0 0; }
+.chiprow { display: none !important; }
+.card { background: linear-gradient(135deg, #ffffff1a, #ffffff0a); border: 1px solid #ffffff17; border-radius: 24px; }
+.btn { background: linear-gradient(#73ff9e, #00d16b); box-shadow: 0 6px 18px #00d16b55; border-radius: 18px; font-weight: 800; }
+.btn.ghost { background: #ffffff14; border: 1px solid #ffffff22; color: var(--fg); box-shadow: none; }
+.eyebrow { font-weight: 800; letter-spacing: .1em; }
+.pill { background: linear-gradient(#73ff9e, #00d16b); color: #000; border: 0; font-weight: 800; box-shadow: 0 0 16px #00d16b66; }
+.bigring svg { filter: drop-shadow(0 0 12px #00d16b99); }
+.ring .bg { stroke: #ffffff14; }
+.bigring .num { font-size: clamp(72px, 24vw, 92px); }
+.bigring .sub { color: var(--good); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.used { background: #ffffff0f; border-radius: 18px; padding: 14px; font-weight: 600; }
+body[data-tab="me"] #settings { position: static; inset: auto; z-index: auto; background: transparent; padding: 0; overflow: visible; }
+body[data-tab="me"] #settings .in { max-width: none; }
+body[data-tab="me"] #closeSettings { display: none; }
+#settings h2 { font-size: 34px; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(4, 1fr);
+  padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  background: rgba(10, 14, 12, .92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid #ffffff14; }
+.tabbar button { display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 52px; justify-content: center;
+  background: none; border: 0; color: #8a948e; font: 800 11px var(--body); cursor: pointer; }
+.tabbar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar button[aria-current="page"] { color: var(--good); }
+.tabbar button:focus-visible { outline: 3px solid var(--mark); outline-offset: -4px; border-radius: 12px; }
+body.alarm-on .tabbar { display: none; }
 </style>
 </head>
 <body>
 <main>
-  <div class="top">
+  <div class="top" data-tab="today">
     <h1 class="logo">DO IT</h1>
     <div class="topright">
       <span class="pill" id="streak" aria-label="Streak">🔥 0 days</span>
-      <button class="gear" id="openSettings" type="button" aria-label="Settings">⚙︎</button>
+      <button class="gear" id="openSettings" type="button" aria-label="Settings" hidden>⚙︎</button>
     </div>
   </div>
-  <p class="hello" id="hello" hidden></p>
+  <p class="hello" id="hello" data-tab="today" hidden></p>
+  <h2 class="tabtitle" data-tab="focus">Focus</h2>
+  <h2 class="tabtitle" data-tab="week">This week</h2>
 
-  <section class="card quick" id="quick">
+  <section class="card quick" id="quick" data-tab="today">
     <p class="eyebrow">Block your apps</p>
     <p class="body">Pick which apps send you to DO IT. This opens the Shortcuts app, where you set it up.</p>
     <a class="btn" id="openShortcuts" href="shortcuts://">Open Shortcuts</a>
@@ -234,13 +267,13 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <button class="btn ghost" id="hideQuick" type="button">I'm all set, hide this</button>
   </section>
 
-  <section class="card" id="go">
+  <section class="card" id="go" data-tab="today">
     <div class="bigring">
       <svg class="ring" viewBox="0 0 110 110" aria-hidden="true">
         <circle class="bg" cx="55" cy="55" r="48" fill="none" stroke-width="7"/>
         <circle class="fg" id="ringFg" cx="55" cy="55" r="48" fill="none" stroke-width="7" stroke-linecap="round" transform="rotate(-90 55 55)"/>
       </svg>
-      <div class="mid"><span class="num" id="ringNum">30</span><span class="sub">minutes left today</span></div>
+      <div class="mid"><span class="num" id="ringNum">30</span><span class="sub">Minutes left</span></div>
     </div>
     <p class="used" id="todayLeft">You get 30 minutes a day on your apps.</p>
     <div class="chiprow">
@@ -254,7 +287,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <button class="btn" id="start" type="button">Start</button>
   </section>
 
-  <section class="card pop" id="running" hidden>
+  <section class="card pop" id="running" data-tab="today" hidden>
     <p class="eyebrow">You're in</p>
     <p class="timer go" id="clock">10:00</p>
     <p class="note" id="runNote"></p>
@@ -285,7 +318,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <span class="stopok">OK</span>
   </button>
 
-  <section class="card pop" id="blocked" hidden>
+  <section class="card pop" id="blocked" data-tab="today" hidden>
     <p class="eyebrow" id="blockedWhy">Done for today</p>
     <p class="task" id="blockedTitle">You used all your time.</p>
     <p class="timer up" id="blockedClock">0:00:00</p>
@@ -293,7 +326,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="quote" id="quote"></p>
   </section>
 
-  <section class="card" id="focusCard">
+  <section class="card" id="focusCard" data-tab="focus">
     <p class="eyebrow">Focus mode</p>
     <p class="body">Lock your apps right now. Once it starts, it can't be stopped.</p>
     <div class="chips">
@@ -304,7 +337,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     </div>
   </section>
 
-  <section class="card" id="goalCard">
+  <section class="card" id="goalCard" data-tab="today">
     <p class="eyebrow">Tomorrow's goal</p>
     <p class="body" id="goalToday" hidden></p>
     <label for="goalIn">What do you want to get done tomorrow?</label>
@@ -312,14 +345,14 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="note">It shows up on your alarm in the morning.</p>
   </section>
 
-  <section class="card" id="opensCard">
+  <section class="card" id="opensCard" data-tab="week">
     <p class="eyebrow">App checker</p>
     <p class="opens" id="opensToday">0</p>
     <p class="body" id="opensNote">times you opened your blocked apps today.</p>
     <p class="note" id="opensWeek"></p>
   </section>
 
-  <section class="card" id="stretchCard">
+  <section class="card" id="stretchCard" data-tab="today">
     <p class="eyebrow">Morning stretches</p>
     <div id="stretchList"></div>
     <div id="stretchNow" hidden>
@@ -333,13 +366,13 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <button class="btn" id="stretchGo" type="button">Start stretching (4 minutes)</button>
   </section>
 
-  <section class="card" id="weekCard">
+  <section class="card" id="weekCard" data-tab="week">
     <p class="eyebrow">This week</p>
     <div class="week" id="week"></div>
     <p class="note" id="weekNote"></p>
   </section>
 
-  <section class="card" id="bedCard">
+  <section class="card" id="bedCard" data-tab="focus">
     <label class="switch">
       <span>
         <span class="eyebrow" style="display:block">Bedtime lock</span>
@@ -350,7 +383,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="note" id="bedtimeNote" hidden></p>
   </section>
 
-  <section class="card" id="alarmCard">
+  <section class="card" id="alarmCard" data-tab="focus">
     <label class="switch">
       <span>
         <span class="eyebrow" style="display:block">Morning alarm</span>
@@ -367,9 +400,9 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="note">Alarm video: "Just Do It" by Shia LaBeouf, from #INTRODUCTIONS by LaBeouf, Rönkkö &amp; Turner (2015). Played from YouTube.</p>
   </section>
 
-  <div id="settings" hidden>
+  <div id="settings" data-tab="me" hidden>
     <div class="in">
-      <div class="top"><h2>Settings</h2><button class="gear" id="closeSettings" type="button" aria-label="Close settings">✕</button></div>
+      <div class="top"><h2>Me</h2><button class="gear" id="closeSettings" type="button" aria-label="Close settings">✕</button></div>
 
       <section class="card">
         <p class="eyebrow">General</p>
@@ -382,7 +415,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
 
       <section class="card">
         <p class="eyebrow">Home screen</p>
-        <label class="switch"><span><span class="body">Shortcut buttons under the ring</span></span><input type="checkbox" id="setChips" role="switch"></label>
+        <label class="switch" hidden><span><span class="body">Shortcut buttons under the ring</span></span><input type="checkbox" id="setChips" role="switch"></label>
         <div id="layoutList"></div>
         <button class="btn ghost" id="layoutReset" type="button">Reset the layout</button>
         <p class="note">Drag the ≡ to move a card. Turn a card off to hide it. Hiding a card doesn't turn it off. Your alarm and locks still work.</p>
@@ -409,7 +442,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     </div>
   </div>
 
-  <section class="card" id="setup">
+  <section class="card" id="setup" data-tab="me">
     <p class="eyebrow">Pick the apps to block</p>
     <p class="body">You choose the apps in your iPhone's Shortcuts app. Do this once:</p>
     <ol class="steps">
@@ -425,6 +458,12 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="note">Now whenever you open one of those apps, DO IT opens first and takes the time from today's 30 minutes.</p>
   </section>
 </main>
+<nav class="tabbar" aria-label="DO IT tabs">
+  <button type="button" data-show="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2"/></svg><span>Today</span></button>
+  <button type="button" data-show="focus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z"/></svg><span>Focus</span></button>
+  <button type="button" data-show="week"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span>Week</span></button>
+  <button type="button" data-show="me"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8a4 4 0 1 0 0 8M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>Me</span></button>
+</nav>
 <script>
 // DO IT: 30 minutes a day on distracting apps, plus focus mode, a bedtime lock and a streak.
 // Each visit takes time out of today's 30 minutes. Once it's used up, DO IT stays locked until midnight.
@@ -852,8 +891,8 @@ $("setReset").onclick = () => {
 applySettings();
 
 // Home screen layout: which cards show, and in what order.
-const CARDS = [["focusCard", "Focus mode"], ["goalCard", "Tomorrow's goal"], ["opensCard", "App checker"],
-  ["stretchCard", "Morning stretches"], ["weekCard", "This week"], ["bedCard", "Bedtime lock"], ["alarmCard", "Morning alarm"]];
+const CARDS = [["focusCard", "Focus mode"], ["stretchCard", "Morning stretches"], ["goalCard", "Tomorrow's goal"],
+  ["weekCard", "This week"], ["opensCard", "App checker"], ["bedCard", "Bedtime lock"], ["alarmCard", "Morning alarm"]];
 function layout() {
   let l = {};
   try { l = JSON.parse(store.get("doit-layout") || "{}"); } catch {}
@@ -975,6 +1014,19 @@ $("copy").onclick = async () => {
   try { await navigator.clipboard.writeText(ADDRESS + "?open=1"); $("copy").textContent = "Copied"; }
   catch { $("copy").textContent = "Press and hold the address above to copy it"; }
 };
+// Tabs along the bottom: Today, Focus, Week and Me (Me holds the settings).
+function showTab(tab) {
+  if (document.body.dataset.tab === "me" && tab !== "me") $("closeSettings").click();
+  document.body.dataset.tab = tab;
+  if (tab === "me") { $("openSettings").click(); document.body.style.overflow = ""; }
+  document.querySelectorAll(".tabbar button").forEach((b) => {
+    if (b.dataset.show === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tabbar button").forEach((b) => { b.onclick = () => showTab(b.dataset.show); });
+$("setSetup").onclick = () => { $("setup").hidden = false; $("setup").scrollIntoView({ behavior: "smooth" }); };
+showTab("today");
 </script>
 </body>
 </html>
