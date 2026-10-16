@@ -25,6 +25,8 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: DO IT uses the camera for the mirror photo that stops your morning alarm.
+        NSAlarmKitUsageDescription: DO IT uses alarms for your morning alarm, which keeps ringing until you take a mirror photo.
     entitlements:
       path: App/DOIT.entitlements
       properties:

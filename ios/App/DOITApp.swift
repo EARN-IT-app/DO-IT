@@ -16,18 +16,28 @@ struct RootView: View {
     @Environment(\.scenePhase) private var phase
     @AppStorage("setUpDone") private var setUpDone = false
     @State private var changing = false
+    @State private var ringing = MorningAlarm.ringing
 
     var body: some View {
         Group {
-            if !setUpDone {
+            if ringing {
+                AlarmView { ringing = false }
+            } else if !setUpDone {
                 SetupView { setUpDone = true }
             } else {
                 TodayView(change: { changing = true })
             }
         }
         .sheet(isPresented: $changing) { ChangeView() }
+        // Switch to the alarm screen if it goes off while DO IT is open.
+        .onReceive(Timer.publish(every: 10, on: .main, in: .common).autoconnect()) { _ in
+            if MorningAlarm.ringing != ringing { ringing = MorningAlarm.ringing }
+        }
         .onChange(of: phase) { now in
-            if now == .active && setUpDone { Limit.checkDay() }
+            guard now == .active else { return }
+            ringing = MorningAlarm.ringing
+            if setUpDone { Limit.checkDay() }
+            Task { await MorningAlarm.reschedule() } // top up the next few days
         }
     }
 }
@@ -143,6 +153,8 @@ struct TodayView: View {
     @State private var askFocus: Int?
     @State private var problem: String?
     @State private var bedtime = Bedtime.on
+    @State private var alarmOn = MorningAlarm.on
+    @State private var alarmTime = MorningAlarm.time
     private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -160,6 +172,7 @@ struct TodayView: View {
                 todayCard
                 focusCard
                 bedtimeCard
+                alarmCard
 
                 Button(action: change) {
                     Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
@@ -236,6 +249,37 @@ struct TodayView: View {
                         .foregroundColor(.black)
                     }
                 }
+            }
+        }
+    }
+
+    private var alarmCard: some View {
+        Card {
+            Toggle(isOn: Binding(get: { alarmOn }, set: { want in
+                if !want && MorningAlarm.ringing {
+                    problem = "The alarm can't be turned off while it's going off. Take the mirror photo."
+                    return
+                }
+                alarmOn = want
+                MorningAlarm.on = want
+                Task { await MorningAlarm.reschedule() }
+            })) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("MORNING ALARM").font(.caption.bold()).foregroundColor(doitGreen)
+                    Text("Keeps going off every \(MorningAlarm.gap) minutes until you take a photo of yourself in the mirror.")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .tint(doitGreen)
+            if alarmOn {
+                DatePicker("Wake up at", selection: $alarmTime, displayedComponents: .hourAndMinute)
+                    .font(.headline)
+                    .onChange(of: alarmTime) { t in
+                        let c = Calendar.current.dateComponents([.hour, .minute], from: t)
+                        MorningAlarm.hour = c.hour ?? 7
+                        MorningAlarm.minute = c.minute ?? 0
+                        Task { await MorningAlarm.reschedule() }
+                    }
             }
         }
     }
