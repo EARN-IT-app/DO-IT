@@ -281,7 +281,7 @@ struct TodayView: View {
         Card {
             Toggle(isOn: Binding(get: { alarmOn }, set: { want in
                 if !want && MorningAlarm.ringing {
-                    problem = "The alarm can't be turned off while it's going off. Take the mirror photo."
+                    problem = "The alarm can't be turned off while it's going off. Take a picture of the sink."
                     return
                 }
                 alarmOn = want
@@ -290,7 +290,7 @@ struct TodayView: View {
             })) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("MORNING ALARM").font(.caption.bold()).foregroundColor(doitGreen)
-                    Text("Goes off every minute, with no snooze, until you get up and take a photo of yourself in the mirror.")
+                    Text("Goes off every minute, with no snooze, until you get up and take a picture of the sink.")
                         .foregroundColor(.secondary)
                 }
             }

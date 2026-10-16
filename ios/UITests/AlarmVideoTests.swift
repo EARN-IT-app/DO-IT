@@ -15,7 +15,7 @@ final class AlarmVideoTests: XCTestCase {
         XCUIDevice.shared.press(.home)
 
         // The alarm rings 15 seconds after alarms are allowed.
-        let button = springboard.buttons["Mirror photo"]
+        let button = springboard.buttons["Sink photo"]
         XCTAssertTrue(button.waitForExistence(timeout: 60), "The alarm didn't go off")
         sleep(6)
         button.tap()

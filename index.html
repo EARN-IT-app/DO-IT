@@ -144,12 +144,12 @@ body.alarm-on #alarmVideo { position: fixed; inset: 0; z-index: -1; width: auto;
 body.alarm-on #ringing .eyebrow, body.alarm-on #ringing .task, body.alarm-on #ringing .note { text-shadow: 0 2px 10px #000, 0 0 3px #000; }
 body.alarm-on #ringing .note { color: #fff; }
 body.alarm-on #mirrorBtn { margin-top: auto; }
-/* The alarm words sit in the middle of the screen and slowly grow and shrink, like breathing. */
+/* The alarm words sit in the middle of the screen, breathe and spin all the way around. */
 body.alarm-on #ringing .eyebrow, body.alarm-on #ringing .task, body.alarm-on #ringing .note {
-  text-align: center; transform-origin: center; animation: breathe 3s ease-in-out infinite;
+  text-align: center; transform-origin: center; animation: breathe 4s ease-in-out infinite;
 }
 body.alarm-on #ringing .eyebrow { margin-top: auto; }
-@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes breathe { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.06) rotate(180deg); } 100% { transform: scale(1) rotate(360deg); } }
 body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center; }
 </style>
 </head>
@@ -196,12 +196,12 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
 
   <section class="card pop" id="ringing" hidden>
     <p class="eyebrow">Morning alarm</p>
-    <p class="task">GOOD MORNING. Get up, go to the mirror, and take a photo of yourself.</p>
+    <p class="task">GOOD MORNING. Get up and take a picture of the sink.</p>
     <p class="note">The alarm keeps going until you do.</p>
     <div class="video" id="alarmVideo"></div>
     <input type="file" id="mirrorPhoto" accept="image/*" capture="environment" hidden>
     <button class="btn" id="mirrorBtn" type="button">Open camera</button>
-    <img id="mirrorPreview" alt="Your mirror photo" hidden>
+    <img id="mirrorPreview" alt="Your sink photo" hidden>
     <p class="verdict" id="mirrorVerdict" hidden></p>
   </section>
 
@@ -239,7 +239,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <label class="switch">
       <span>
         <span class="eyebrow" style="display:block">Morning alarm</span>
-        <span class="body">No snooze. It keeps going off until you get up and take a photo of yourself in the mirror.</span>
+        <span class="body">No snooze. It keeps going off until you get up and take a picture of the sink.</span>
       </span>
       <input type="checkbox" id="alarmOn" role="switch">
     </label>
@@ -456,7 +456,7 @@ $("bedtime").onchange = (e) => {
 };
 
 // The morning alarm. It rings for half an hour from the set time,
-// and only stops once a photo with a person in it is taken.
+// and only stops once a picture with a sink in it is taken.
 const ALARM_MINUTES = 30;
 const alarmOn = () => store.get("doit-alarm") === "1";
 const alarmStart = () => {
@@ -477,7 +477,7 @@ $("alarmOn").onchange = (e) => {
   if (!e.target.checked && alarmRinging()) {
     e.target.checked = true;
     $("alarmNote").hidden = false;
-    $("alarmNote").textContent = "The alarm can't be turned off while it's going off. Take the mirror photo.";
+    $("alarmNote").textContent = "The alarm can't be turned off while it's going off. Take a picture of the sink.";
     return;
   }
   $("alarmNote").hidden = true;
@@ -549,14 +549,14 @@ $("mirrorPhoto").onchange = async (e) => {
   await img.decode().catch(() => {});
   const model = await getDetector();
   if (!model) { v.className = "verdict fail"; v.textContent = "The photo checker didn't load. Check your internet and try again."; return; }
-  const found = (await model.detect(img)).some((p) => p.class === "person" && p.score > 0.5);
+  const found = (await model.detect(img)).some((p) => p.class === "sink" && p.score > 0.4);
   if (found) {
     store.set("doit-alarm-done", dayKey());
     v.className = "verdict pass"; v.textContent = "You're up. Good morning!";
     stopBeeping();
     setTimeout(() => { img.hidden = true; v.hidden = true; resume(); }, 1500);
   } else {
-    v.className = "verdict fail"; v.textContent = "I couldn't see you in that photo. Stand in front of the mirror with good light and try again.";
+    v.className = "verdict fail"; v.textContent = "I couldn't see a sink in that picture. Get the whole sink in, with the light on, and try again.";
   }
 };
 

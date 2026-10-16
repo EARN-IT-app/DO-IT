@@ -1,5 +1,5 @@
-// The mirror photo that stops the morning alarm. It has to be taken with the
-// camera right now (not picked from the photo library), and a face has to be in it.
+// The sink photo that stops the morning alarm. It has to be taken with the
+// camera right now (not picked from the photo library), and a sink has to be in it.
 import SwiftUI
 import UIKit
 import Vision
@@ -21,15 +21,17 @@ struct AlarmView: View {
                 .allowsHitTesting(false)
             VStack(spacing: 16) {
                 Spacer()
-                // The words sit in the middle and slowly grow and shrink, like breathing.
+                // The words sit in the middle, breathe and spin all the way around.
                 VStack(spacing: 16) {
                     Image(systemName: "alarm.fill").font(.system(size: 48)).foregroundColor(doitGreen)
                     Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
-                    Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
+                    Text("Get up and take a picture of the sink. The alarm keeps going off until you do.")
                         .multilineTextAlignment(.center)
                 }
                 .scaleEffect(breathe ? 1.06 : 1)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: breathe)
+                .rotationEffect(.degrees(breathe ? 360 : 0))
+                .animation(.easeInOut(duration: 4).repeatForever(autoreverses: false), value: breathe)
                 .onAppear { breathe = true }
                 if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
                 Spacer()
@@ -49,12 +51,12 @@ struct AlarmView: View {
                 camera = false
                 guard let image else { return }
                 checking = true
-                hasFace(image) { found in
+                hasSink(image) { found in
                     checking = false
                     if found {
                         Task { await MorningAlarm.photoTaken(); stopped() }
                     } else {
-                        message = "I couldn't see your face. Stand in front of the mirror with good light and try again."
+                        message = "I couldn't see a sink in that picture. Get the whole sink in, with the light on, and try again."
                     }
                 }
             }
@@ -62,13 +64,14 @@ struct AlarmView: View {
         }
     }
 
-    private func hasFace(_ image: UIImage, done: @escaping (Bool) -> Void) {
+    /// Uses the iPhone's built-in picture labels to look for a sink.
+    private func hasSink(_ image: UIImage, done: @escaping (Bool) -> Void) {
         guard let cg = image.cgImage else { return done(false) }
         DispatchQueue.global(qos: .userInitiated).async {
-            let request = VNDetectFaceRectanglesRequest()
+            let request = VNClassifyImageRequest()
             let handler = VNImageRequestHandler(cgImage: cg, orientation: .init(image.imageOrientation))
             try? handler.perform([request])
-            let found = !(request.results ?? []).isEmpty
+            let found = (request.results ?? []).contains { $0.identifier.contains("sink") && $0.confidence > 0.1 }
             DispatchQueue.main.async { done(found) }
         }
     }
