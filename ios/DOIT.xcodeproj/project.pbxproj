@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		02748A43D99C7E44C97FBB5A /* DOITShieldAction.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		08D580EFECE2F2E53B8C60D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */; };
+		0902809BF87A0BB4A1DCB1E4 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 		1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
 		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
@@ -308,6 +309,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0902809BF87A0BB4A1DCB1E4 /* Shared.swift in Sources */,
 				93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
