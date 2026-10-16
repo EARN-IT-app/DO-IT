@@ -18,6 +18,7 @@
 		969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9A87AFADECD086A75AC13571 /* DOITShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CAC26B56C62461DEEDFE93D0 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+		F0D0CCC5DE62552F35ABF6ED /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -318,6 +319,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F0D0CCC5DE62552F35ABF6ED /* Shared.swift in Sources */,
 				8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
