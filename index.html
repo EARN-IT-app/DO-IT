@@ -173,6 +173,17 @@ body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed
 #alarmVideo { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
 #alarmVideo iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 #mirrorPreview { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; }
+/* STOP IT: a big stop sign when you're sent here after the day's time is used up. */
+#stopSign { position: fixed; inset: 0; z-index: 90; background: #000; border: 0; padding: 24px; margin: 0; width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; cursor: pointer; color: #fff; font: inherit; }
+#stopSign[hidden] { display: none; }
+#stopSign svg { width: min(86vw, 62vh, 420px); height: auto; filter: drop-shadow(0 12px 40px #e5262a66); }
+#stopSign text { font: 400 96px var(--display); letter-spacing: 2px; }
+#stopSign .tapnote { color: #ffffffb3; font-weight: 600; font-size: 17px; }
+@media (prefers-reduced-motion: no-preference) {
+  #stopSign svg { animation: stopIn .45s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes stopIn { from { transform: scale(.4) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+}
 /* While the alarm is going, the video fills the whole screen with the words on top. */
 body.alarm-on { overflow: hidden; }
 body.alarm-on #ringing {
@@ -258,6 +269,15 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <img id="mirrorPreview" alt="Your sink photo" hidden>
     <p class="verdict" id="mirrorVerdict" hidden></p>
   </section>
+
+  <button id="stopSign" type="button" hidden aria-label="Stop it. Your time is up for today. Tap to continue.">
+    <svg viewBox="0 0 240 240" aria-hidden="true">
+      <polygon points="70,4 170,4 236,70 236,170 170,236 70,236 4,170 4,70" fill="#fff"/>
+      <polygon points="74,14 166,14 226,74 226,166 166,226 74,226 14,166 14,74" fill="#e5262a"/>
+      <text x="120" y="122" text-anchor="middle" dominant-baseline="middle" fill="#fff" textLength="190" lengthAdjust="spacingAndGlyphs">STOP IT</text>
+    </svg>
+    <span class="tapnote">Your time is up for today. Tap to continue.</span>
+  </button>
 
   <section class="card pop" id="blocked" hidden>
     <p class="eyebrow" id="blockedWhy">Done for today</p>
@@ -961,6 +981,9 @@ $("layoutReset").onclick = () => { store.set("doit-layout", "{}"); applyLayout()
 $("openSettings").addEventListener("click", showLayout);
 applyLayout();
 
+// STOP IT shows once each time you arrive here (opened, or switched back to), not on every redraw.
+let justArrived = true;
+$("stopSign").onclick = () => { $("stopSign").hidden = true; };
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
   keepAwake();
@@ -979,15 +1002,18 @@ function resume() {
   } else if (leftMs() <= 0) {
     const midnight = () => { const d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); };
     showBlocked("Done for today", "You used all your time.", "That's how long until your apps unlock. Go do the thing you've been putting off.", midnight, "up");
+    if (justArrived) $("stopSign").hidden = false;
   } else {
     showGo();
   }
 }
 resume();
+justArrived = false;
 // Check every few seconds whether the alarm should go off.
 setInterval(() => { if (alarmRinging() && $("ringing").hidden) resume(); }, 5000);
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
-window.addEventListener("pageshow", (e) => { if (e.persisted) resume(); });
+const arrive = () => { justArrived = true; resume(); justArrived = false; };
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") arrive(); });
+window.addEventListener("pageshow", (e) => { if (e.persisted) arrive(); });
 
 $("copy").onclick = async () => {
   try { await navigator.clipboard.writeText(ADDRESS + "?open=1"); $("copy").textContent = "Copied"; }
