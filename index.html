@@ -148,7 +148,10 @@ body.alarm-on #mirrorBtn { margin-top: auto; }
 body.alarm-on #ringing .eyebrow, body.alarm-on #ringing .task, body.alarm-on #ringing .note {
   text-align: center; transform-origin: center; animation: breathe 4s ease-in-out infinite;
 }
-body.alarm-on #ringing .eyebrow { margin-top: auto; }
+body.alarm-on #ringing .eyebrow { margin-top: auto; font-size: 24px; }
+/* Twice the normal size while the alarm is going. */
+body.alarm-on #ringing .task { font-size: 52px; line-height: 1.05; }
+body.alarm-on #ringing .note { font-size: 30px; }
 @keyframes breathe { 0% { transform: perspective(600px) scale(1) rotateX(0deg); } 50% { transform: perspective(600px) scale(1.06) rotateX(-180deg); } 100% { transform: perspective(600px) scale(1) rotateX(-360deg); } }
 body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center; }
 </style>

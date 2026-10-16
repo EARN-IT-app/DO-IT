@@ -23,10 +23,13 @@ struct AlarmView: View {
                 Spacer()
                 // The words sit in the middle, breathe and flip forward all the way around.
                 VStack(spacing: 16) {
-                    Image(systemName: "alarm.fill").font(.system(size: 48)).foregroundColor(doitGreen)
-                    Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
+                    Image(systemName: "alarm.fill").font(.system(size: 96)).foregroundColor(doitGreen)
+                    Text("GOOD MORNING.").font(.system(size: 80, weight: .black)).multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.5)
                     Text("Get up and take a picture of the sink. The alarm keeps going off until you do.")
+                        .font(.system(size: 34, weight: .semibold))
                         .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.5)
                 }
                 .scaleEffect(breathe ? 1.06 : 1)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: breathe)
