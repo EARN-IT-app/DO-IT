@@ -7,33 +7,26 @@
 <meta name="description" content="Get up and take a photo that proves you're working before you open a distracting app.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DO IT">
-<meta name="theme-color" content="#2346e0">
+<meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Figtree:wght@400;600;700&display=swap">
 <style>
 /* Layout: one narrow column, one task at a time, big thumb-sized buttons */
 :root {
-  --bg: #eef1f8;
-  --card: #ffffff;
-  --fg: #141a2e;
-  --muted: #5a6280;
-  --accent: #2346e0;
-  --accent-fg: #ffffff;
-  --mark: #ffd84a;
-  --good: #1d8a4e;
-  --bad: #c2362b;
-  --line: #d6dbea;
+  --bg: #000000;
+  --card: #121212;
+  --fg: #ffffff;
+  --muted: #b8b8b8;
+  --accent: #00d26a;
+  --accent-fg: #000000;
+  --mark: #00d26a;
+  --good: #00d26a;
+  --bad: #ff5c5c;
+  --line: #2e2e2e;
   --display: "Archivo Black", "Arial Black", Impact, sans-serif;
   --body: "Figtree", -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1322; --card: #191e33; --fg: #eef0f8; --muted: #9aa2c0;
-    --accent: #6f8bff; --accent-fg: #0f1322; --mark: #e8c234;
-    --good: #4cc983; --bad: #ff7a6e; --line: #2c3352; color-scheme: dark;
-  }
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -52,7 +45,7 @@ h1 {
   font-family: var(--display); font-weight: 400; font-size: clamp(64px, 22vw, 104px);
   line-height: .9; margin: 0; letter-spacing: -1px;
 }
-h1 span { background: linear-gradient(transparent 58%, var(--mark) 58%, var(--mark) 92%, transparent 92%); padding: 0 4px; }
+h1 span { color: #000; background: var(--mark); padding: 0 8px; border-radius: 6px; }
 .lede { margin: 0; color: var(--muted); }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: 18px;
@@ -68,7 +61,7 @@ h1 span { background: linear-gradient(transparent 58%, var(--mark) 58%, var(--ma
 }
 a.btn { text-decoration: none; }
 #setup { scroll-margin-top: 20px; }
-.btn.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); min-height: 52px; font-size: 16px; }
+.btn.ghost { background: transparent; color: var(--fg); border: 2px solid #ffffff; min-height: 52px; font-size: 16px; }
 .btn:focus-visible, select:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 #photo { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .cam { width: 100%; max-width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: #000; }
@@ -89,20 +82,20 @@ select {
 .addr { margin: 0; padding: 12px; border-radius: 10px; background: var(--bg); font-weight: 700; word-break: break-all; user-select: all; -webkit-user-select: all; }
 .pop-wrap {
   position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
-  background: rgba(10, 12, 24, .97);
+  background: rgba(0, 0, 0, .97);
   padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
 }
 .pop-box { width: 100%; max-width: 560px; background: var(--card); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .pop-title { font-family: var(--display); font-size: 30px; line-height: 1; margin: 0; }
 .video { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
 .btn[disabled] { opacity: .55; cursor: not-allowed; }
-#closeVideo:not([disabled]) { background: var(--good); color: #fff; }
+#closeVideo:not([disabled]) { background: var(--good); color: #000; }
 .pop-wrap { flex-direction: column; }
 .gate { min-height: 60vh; justify-content: center; gap: 22px; }
 .pop-title.big { font-size: clamp(64px, 20vw, 110px); }
 /* Stage 2 stays laid out (so the video player can load early) but is invisible until the tap. */
 .stage.waiting { position: absolute; visibility: hidden; pointer-events: none; left: 0; top: 0; }
-.tap { min-height: 76px; font: 400 26px var(--display); letter-spacing: .5px; background: var(--mark); color: #141a2e; }
+.tap { min-height: 76px; font: 400 26px var(--display); letter-spacing: .5px; background: var(--mark); color: #000; }
 .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
 .check input { width: 22px; height: 22px; accent-color: var(--accent); }

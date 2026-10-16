@@ -27,10 +27,10 @@ class MainActivity : Activity() {
     private lateinit var statusText: TextView
     private lateinit var appList: LinearLayout
 
-    private val ink = Color.parseColor("#141A2E")
-    private val muted = Color.parseColor("#5A6280")
-    private val accent = Color.parseColor("#2346E0")
-    private val good = Color.parseColor("#1D8A4E")
+    private val ink = Color.parseColor("#000000")
+    private val muted = Color.parseColor("#4A4A4A")
+    private val accent = Color.parseColor("#00A651")
+    private val good = Color.parseColor("#00A651")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +40,7 @@ class MainActivity : Activity() {
         val page = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad, dp(32), pad, dp(40))
-            setBackgroundColor(Color.parseColor("#EEF1F8"))
+            setBackgroundColor(Color.parseColor("#FFFFFF"))
         }
         page.addView(text("DO IT", 56f, ink, bold = true))
         page.addView(text("Pick the apps that waste your time. When you open one, DO IT stops you until you go outside, take a photo of the sky, and watch the video.", 16f, muted))

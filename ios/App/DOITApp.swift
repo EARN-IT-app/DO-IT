@@ -10,7 +10,7 @@ let siteURL = URL(string: "https://wonderbread4912.github.io/DO-IT/?from=ios")!
 @main
 struct DOITApp: App {
     var body: some Scene {
-        WindowGroup { RootView() }
+        WindowGroup { RootView().tint(.green).preferredColorScheme(.dark) }
     }
 }
 
@@ -163,7 +163,7 @@ struct BreakView: View {
     var body: some View {
         let left = max(0, Int(Break.endsAt.timeIntervalSince(now)))
         VStack(spacing: 20) {
-            Text("YOUR BREAK").font(.caption.bold()).foregroundColor(.blue)
+            Text("YOUR BREAK").font(.caption.bold()).foregroundColor(.green)
             Text(String(format: "%d:%02d", left / 60, left % 60))
                 .font(.system(size: 72, weight: .black).monospacedDigit())
                 .foregroundColor(.green)

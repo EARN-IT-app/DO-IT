@@ -21,7 +21,7 @@ class StopActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(pad, pad, pad, pad)
-            setBackgroundColor(Color.parseColor("#0F1322"))
+            setBackgroundColor(Color.parseColor("#000000"))
         }
         layout.addView(TextView(this).apply {
             text = "STOP."
@@ -32,14 +32,14 @@ class StopActivity : Activity() {
         layout.addView(TextView(this).apply {
             text = "Get up, go outside, take a photo of the sky, and watch the video. Then you get your break."
             textSize = 18f
-            setTextColor(Color.parseColor("#C9CEE3"))
+            setTextColor(Color.parseColor("#B8B8B8"))
             setPadding(0, dp(12), 0, dp(32))
         })
-        layout.addView(bigButton("DO IT", "#FFD84A", "#141A2E") {
+        layout.addView(bigButton("DO IT", "#00D26A", "#000000") {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(SITE_URL)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             finish()
         })
-        layout.addView(bigButton("Go to my home screen", "#2C3352", "#FFFFFF") { goHome() })
+        layout.addView(bigButton("Go to my home screen", "#2E2E2E", "#FFFFFF") { goHome() })
         setContentView(layout)
     }
 
