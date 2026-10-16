@@ -76,7 +76,6 @@ a.btn { text-decoration: none; }
 .week span { font-size: 12px; color: var(--muted); font-weight: 700; }
 .week .today span { color: var(--fg); }
 .goalin { width: 100%; min-height: 54px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--fg); font: 600 18px var(--body); padding: 0 14px; }
-#hwPreview { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; }
 .timer { font-family: var(--display); font-size: 56px; line-height: 1; margin: 0; font-variant-numeric: tabular-nums; color: var(--good); }
 .timer.up { color: var(--bad); }
 .big { font-family: var(--display); font-size: 44px; line-height: 1; margin: 0; color: var(--good); }
@@ -305,22 +304,6 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     </div>
   </section>
 
-  <section class="card" id="homeworkCard">
-    <p class="eyebrow">Homework lock</p>
-    <p class="body">Locks your apps until you take a picture of your finished homework.</p>
-    <button class="btn" id="hwStart" type="button">Start homework lock</button>
-  </section>
-
-  <section class="card pop" id="homework" hidden>
-    <p class="eyebrow">Homework lock</p>
-    <p class="task">Homework time. Your apps stay locked until it's done.</p>
-    <p class="note">When you're finished, take a picture of your work. It needs to show your writing clearly.</p>
-    <input type="file" id="hwPhoto" accept="image/*" capture="environment" hidden>
-    <button class="btn" id="hwBtn" type="button">I'm done, open camera</button>
-    <img id="hwPreview" alt="Your homework" hidden>
-    <p class="verdict" id="hwVerdict" hidden></p>
-  </section>
-
   <section class="card" id="goalCard">
     <p class="eyebrow">Tomorrow's goal</p>
     <p class="body" id="goalToday" hidden></p>
@@ -529,11 +512,10 @@ function showStreak() {
 let timerId = null;
 function only(id) {
   clearInterval(timerId);
-  for (const c of ["go", "running", "blocked", "ringing", "homework"]) $(c).hidden = c !== id;
-  // Focus mode and homework lock can't be started on top of another lock.
-  const locked = id === "blocked" || id === "ringing" || id === "homework";
+  for (const c of ["go", "running", "blocked", "ringing"]) $(c).hidden = c !== id;
+  // Focus mode can't be started on top of another lock.
+  const locked = id === "blocked" || id === "ringing";
   $("focusCard").hidden = locked;
-  $("homeworkCard").hidden = locked;
   showWeek(); showGoal(); showOpens();
   if (id !== "ringing") stopBeeping();
   showStreak();
@@ -753,39 +735,6 @@ $("mirrorPhoto").onchange = async (e) => {
 };
 
 // Decide what to show whenever DO IT is opened or brought back on screen.
-// Homework lock: everything stays locked until a photo of finished work is taken.
-// The photo check reads the writing in the picture, on the phone itself.
-const HW_KEY = "doit-homework";
-$("hwStart").onclick = () => {
-  if (!confirm("Lock your apps until your homework is done? You can only unlock them with a picture of your finished work.")) return;
-  store.set(HW_KEY, "1");
-  resume();
-};
-let reader = null;
-function getReader() {
-  if (!reader) reader = loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js").catch(() => { reader = null; });
-  return reader;
-}
-$("hwBtn").onclick = () => { $("hwPhoto").value = ""; $("hwPhoto").click(); getReader(); };
-$("hwPhoto").onchange = async (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const v = $("hwVerdict"), img = $("hwPreview");
-  v.hidden = false; v.className = "verdict"; v.textContent = "Reading your work...";
-  img.src = URL.createObjectURL(file); img.hidden = false;
-  await img.decode().catch(() => {});
-  await getReader();
-  if (!window.Tesseract) { v.className = "verdict fail"; v.textContent = "The photo checker didn't load. Check your internet and try again."; return; }
-  const text = await Tesseract.recognize(img, "eng").then((r) => r.data.text).catch(() => "");
-  if ((text.match(/[a-z0-9]/gi) || []).length >= 25) {
-    store.set(HW_KEY, "0");
-    v.className = "verdict pass"; v.textContent = "Nice work. Your apps are unlocked.";
-    setTimeout(() => { img.hidden = true; v.hidden = true; resume(); }, 1500);
-  } else {
-    v.className = "verdict fail"; v.textContent = "I couldn't read any work in that picture. Get the whole page in, with good light, and try again.";
-  }
-};
-
 // Tomorrow's goal: written the night before, shown on the alarm in the morning.
 const goalFor = (key) => store.get("doit-goal-" + key) || "";
 const tomorrowKey = () => { const d = new Date(); d.setDate(d.getDate() + 1); return dayKey(d); };
@@ -894,7 +843,7 @@ $("setSetup").onclick = () => { $("closeSettings").click(); $("setup").hidden = 
 $("setReset").onclick = () => {
   if (!confirm("Clear your streak, goals, week and settings? This can't be undone.")) return;
   // Locks stay as they are, so clearing can never be used to get back into your apps.
-  const keep = ["doit-used-" + dayKey(), SESSION_KEY, FOCUS_KEY, HW_KEY, BEDTIME_KEY, "doit-alarm", "doit-alarm-time", "doit-alarm-done", "doit-app"];
+  const keep = ["doit-used-" + dayKey(), SESSION_KEY, FOCUS_KEY, BEDTIME_KEY, "doit-alarm", "doit-alarm-time", "doit-alarm-done", "doit-app"];
   try {
     Object.keys(localStorage).filter((k) => k.startsWith("doit-") && !keep.includes(k)).forEach((k) => localStorage.removeItem(k));
   } catch {}
@@ -903,7 +852,7 @@ $("setReset").onclick = () => {
 applySettings();
 
 // Home screen layout: which cards show, and in what order.
-const CARDS = [["focusCard", "Focus mode"], ["homeworkCard", "Homework lock"], ["goalCard", "Tomorrow's goal"], ["opensCard", "App checker"],
+const CARDS = [["focusCard", "Focus mode"], ["goalCard", "Tomorrow's goal"], ["opensCard", "App checker"],
   ["stretchCard", "Morning stretches"], ["weekCard", "This week"], ["bedCard", "Bedtime lock"], ["alarmCard", "Morning alarm"]];
 function layout() {
   let l = {};
@@ -991,13 +940,13 @@ applyLayout();
 // STOP IT shows once each time you arrive here (opened, or switched back to), not on every redraw.
 let justArrived = true;
 $("stopSign").onclick = () => { $("stopSign").hidden = true; };
+// The homework lock was taken out (its photo check let any picture through). Free anyone still in it.
+try { localStorage.removeItem("doit-homework"); } catch {}
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
   keepAwake();
   if (alarmRinging()) {
     showRinging();
-  } else if (store.get(HW_KEY) === "1") {
-    only("homework");
   } else if (focusEnd() > Date.now()) {
     const t = new Date(focusEnd()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     showBlocked("Focus mode", "Your apps are locked. Go get it done.", "Unlocks at " + t + ".", focusEnd, "go");
