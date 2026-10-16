@@ -8,7 +8,7 @@ struct Octagon: Shape {
         var path = Path()
         for i in 0..<8 {
             // Start at 22.5° so the top edge is flat, like a real stop sign.
-            let angle = (Double(i) * 45 + 22.5) * .pi / 180
+            let angle = CGFloat(Double(i) * 45 + 22.5) * .pi / 180
             let point = CGPoint(x: c.x + r * cos(angle), y: c.y + r * sin(angle))
             if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
         }
