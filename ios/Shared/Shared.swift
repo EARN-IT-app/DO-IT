@@ -11,7 +11,7 @@ let shared = UserDefaults(suiteName: appGroup) ?? .standard
 /// Why the apps are blocked. Each reason has its own Screen Time store,
 /// so one ending (like a focus session) doesn't unblock another (like the daily limit).
 enum Reason: String {
-    case limit, focus, bedtime
+    case limit, focus, bedtime, homework
 }
 
 /// The apps the person picked, and the Screen Time shields that block them.
@@ -109,6 +109,12 @@ enum Limit {
         guard m > usedToday else { return }
         shared.set(dayKey(), forKey: "usedDay")
         shared.set(m, forKey: "used")
+        shared.set(m, forKey: "used-\(dayKey())") // kept for the weekly report
+    }
+
+    /// Minutes used on any day, for the weekly report.
+    static func used(on date: Date) -> Int {
+        dayKey(date) == dayKey() ? usedToday : shared.integer(forKey: "used-\(dayKey(date))")
     }
 
     /// Days in a row the limit wasn't reached.
@@ -117,6 +123,7 @@ enum Limit {
     /// Called when the limit is reached.
     static func lock() {
         shared.set(dayKey(), forKey: "lockedDay")
+        shared.set(minutes, forKey: "used-\(dayKey())")
         Blocker.shieldOn(.limit)
         Blocker.sendToDOIT(body: "Time's up for today. Tap here to open DO IT.")
     }
@@ -163,7 +170,28 @@ enum Limit {
         else if lockedToday { Blocker.shieldOn(.limit) }
         Focus.check()
         Bedtime.refresh()
+        Homework.check()
     }
+}
+
+/// Homework lock: the apps stay blocked until a picture of finished homework is taken in DO IT.
+enum Homework {
+    static var on: Bool {
+        get { shared.bool(forKey: "homeworkOn") }
+        set { shared.set(newValue, forKey: "homeworkOn") }
+    }
+
+    static func start() { on = true; Blocker.shieldOn(.homework) }
+    static func finish() { on = false; Blocker.shieldOff(.homework) }
+    static func check() { if on { Blocker.shieldOn(.homework) } }
+}
+
+/// Tomorrow's goal: written the night before, shown on the alarm in the morning.
+enum Goal {
+    static func get(_ date: Date) -> String { shared.string(forKey: "goal-\(dayKey(date))") ?? "" }
+    static func set(_ text: String, _ date: Date) { shared.set(text, forKey: "goal-\(dayKey(date))") }
+    static var today: String { get(Date()) }
+    static var tomorrow: Date { Date().addingTimeInterval(86400) }
 }
 
 /// Focus mode: block the apps right now for a set time. It can't be cancelled.

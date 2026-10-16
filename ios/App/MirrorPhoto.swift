@@ -30,6 +30,11 @@ struct AlarmView: View {
                         .font(.system(size: 34, weight: .semibold))
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.5)
+                    if !Goal.today.isEmpty {
+                        Text("Today's goal: \(Goal.today)")
+                            .font(.system(size: 28, weight: .bold)).foregroundColor(doitGreen)
+                            .multilineTextAlignment(.center).minimumScaleFactor(0.5)
+                    }
                 }
                 .scaleEffect(breathe ? 1.06 : 1)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: breathe)
@@ -75,6 +80,61 @@ struct AlarmView: View {
             let handler = VNImageRequestHandler(cgImage: cg, orientation: .init(image.imageOrientation))
             try? handler.perform([request])
             let found = (request.results ?? []).contains { $0.identifier.contains("sink") && $0.confidence > 0.1 }
+            DispatchQueue.main.async { done(found) }
+        }
+    }
+}
+
+/// Homework lock screen: the apps stay locked until a picture of finished
+/// homework is taken. The check reads the writing in the picture.
+struct HomeworkView: View {
+    var finished: () -> Void
+    @State private var camera = false
+    @State private var checking = false
+    @State private var message: String?
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            Image(systemName: "book.fill").font(.system(size: 56)).foregroundColor(doitGreen)
+            Text("HOMEWORK TIME.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
+            Text("Your apps stay locked until it's done. When you're finished, take a picture of your work. It needs to show your writing clearly.")
+                .multilineTextAlignment(.center).foregroundColor(.secondary)
+            if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
+            Spacer()
+            Button { camera = true } label: {
+                Text(checking ? "Reading your work..." : "I'm done, open camera").bold().frame(maxWidth: .infinity, minHeight: 60)
+            }
+            .buttonStyle(.borderedProminent)
+            .foregroundColor(.black)
+            .disabled(checking)
+        }
+        .padding(28)
+        .fullScreenCover(isPresented: $camera) {
+            Camera { image in
+                camera = false
+                guard let image else { return }
+                checking = true
+                hasWriting(image) { found in
+                    checking = false
+                    if found { Homework.finish(); finished() }
+                    else { message = "I couldn't read any work in that picture. Get the whole page in, with good light, and try again." }
+                }
+            }
+            .ignoresSafeArea()
+        }
+    }
+
+    /// Uses the iPhone's built-in text reader to look for real writing.
+    private func hasWriting(_ image: UIImage, done: @escaping (Bool) -> Void) {
+        guard let cg = image.cgImage else { return done(false) }
+        DispatchQueue.global(qos: .userInitiated).async {
+            let request = VNRecognizeTextRequest()
+            request.recognitionLevel = .accurate
+            let handler = VNImageRequestHandler(cgImage: cg, orientation: .init(image.imageOrientation))
+            try? handler.perform([request])
+            let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined()
+            let found = text.filter { $0.isLetter || $0.isNumber }.count >= 25
             DispatchQueue.main.async { done(found) }
         }
     }

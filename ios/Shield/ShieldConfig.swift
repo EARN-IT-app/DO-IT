@@ -26,7 +26,10 @@ class ShieldConfig: ShieldConfigurationDataSource {
     private func stop() -> ShieldConfiguration {
         let title: String
         let why: String
-        if Focus.active {
+        if Homework.on {
+            title = "HOMEWORK TIME."
+            why = "Locked until you take a picture of your finished homework in DO IT."
+        } else if Focus.active {
             let f = DateFormatter(); f.timeStyle = .short
             title = "FOCUS MODE."
             why = "Locked until \(f.string(from: Focus.endsAt))."

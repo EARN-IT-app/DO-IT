@@ -39,6 +39,7 @@ struct RootView: View {
     @AppStorage("setUpDone") private var setUpDone = false
     @State private var changing = false
     @State private var ringing = MorningAlarm.ringing
+    @State private var homework = Homework.on
 
     var body: some View {
         Group {
@@ -46,8 +47,10 @@ struct RootView: View {
                 AlarmView { ringing = false }
             } else if !setUpDone {
                 SetupView { setUpDone = true }
+            } else if homework {
+                HomeworkView { homework = false }
             } else {
-                TodayView(change: { changing = true })
+                TodayView(change: { changing = true }, startHomework: { Homework.start(); homework = true })
             }
         }
         .sheet(isPresented: $changing) { ChangeView() }
@@ -58,6 +61,7 @@ struct RootView: View {
         .onChange(of: phase) { now in
             guard now == .active else { return }
             ringing = MorningAlarm.ringing
+            homework = Homework.on
             if setUpDone { Limit.checkDay() }
             if !CommandLine.arguments.contains("-demo") {
                 Task { await MorningAlarm.reschedule() } // top up the next few days
@@ -173,6 +177,9 @@ func clock(_ seconds: Int) -> String {
 
 struct TodayView: View {
     var change: () -> Void
+    var startHomework: () -> Void
+    @State private var askHomework = false
+    @State private var goal = Goal.get(Goal.tomorrow)
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
@@ -204,6 +211,9 @@ struct TodayView: View {
                     chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
                 }
                 focusCard.id("focus")
+                homeworkCard
+                goalCard
+                weekCard
                 bedtimeCard.id("bedtime")
                 alarmCard.id("alarm")
 
@@ -231,8 +241,66 @@ struct TodayView: View {
         } message: {
             Text("Your apps lock right now. There's no way to cancel until the time is up.")
         }
+        .alert("Lock your apps until your homework is done?", isPresented: $askHomework) {
+            Button("Lock my apps") { startHomework() }
+            Button("Not now", role: .cancel) {}
+        } message: {
+            Text("You can only unlock them with a picture of your finished homework.")
+        }
         .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
             Button("OK", role: .cancel) {}
+        }
+    }
+
+    private var homeworkCard: some View {
+        Card {
+            Text("HOMEWORK LOCK").font(.caption.bold()).foregroundColor(doitGreen)
+            Text("Locks your apps until you take a picture of your finished homework.").foregroundColor(.secondary)
+            Button { askHomework = true } label: {
+                Text("Start homework lock").bold().frame(maxWidth: .infinity, minHeight: 50)
+            }
+            .buttonStyle(.borderedProminent).foregroundColor(.black)
+        }
+    }
+
+    private var goalCard: some View {
+        Card {
+            Text("TOMORROW'S GOAL").font(.caption.bold()).foregroundColor(doitGreen)
+            if !Goal.today.isEmpty { Text("Today's goal: \(Goal.today)") }
+            Text("What do you want to get done tomorrow?").font(.headline)
+            TextField("Finish my essay", text: $goal)
+                .textFieldStyle(.roundedBorder)
+                .onChange(of: goal) { Goal.set($0.trimmingCharacters(in: .whitespaces), Goal.tomorrow) }
+            Text("It shows up on your alarm in the morning.").font(.footnote).foregroundColor(.secondary)
+        }
+    }
+
+    private var weekCard: some View {
+        let days = (0..<7).reversed().map { Date().addingTimeInterval(-86400 * Double($0)) }
+        let mins = days.map { Limit.used(on: $0) }
+        let past = Array(zip(days, mins).dropLast())
+        let best = past.min { $0.1 < $1.1 }
+        let weekday = DateFormatter(); weekday.dateFormat = "EEEEE"
+        let longDay = DateFormatter(); longDay.dateFormat = "EEEE"
+        return Card {
+            Text("THIS WEEK").font(.caption.bold()).foregroundColor(doitGreen)
+            HStack(alignment: .bottom, spacing: 8) {
+                ForEach(0..<7, id: \.self) { i in
+                    VStack(spacing: 6) {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(mins[i] >= Limit.minutes ? Color.red : doitGreen)
+                            .frame(height: max(4, CGFloat(min(mins[i], Limit.minutes)) / CGFloat(Limit.minutes) * 110))
+                        Text(weekday.string(from: days[i])).font(.caption.bold())
+                            .foregroundColor(i == 6 ? .white : .secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 135, alignment: .bottom)
+            if let best {
+                Text("\(mins.reduce(0, +)) minutes used this week. Best day: \(longDay.string(from: best.0)) (\(best.1) min).")
+                    .font(.footnote).foregroundColor(.secondary)
+            }
         }
     }
 
