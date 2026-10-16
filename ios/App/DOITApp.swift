@@ -3,6 +3,7 @@
 // once the day's limit is used up the apps stay blocked until midnight.
 import SwiftUI
 import FamilyControls
+import UserNotifications
 
 @main
 struct DOITApp: App {
@@ -49,12 +50,15 @@ struct SetupView: View {
                     .foregroundColor(.secondary)
 
                 Step(number: 1, title: "Let DO IT use Screen Time",
-                     detail: "Your iPhone will ask. Tap Continue, then use Face ID or your passcode.",
+                     detail: "Your iPhone will ask. Tap Continue, then use Face ID or your passcode. Then tap Allow for notifications, so DO IT can open when your time is up.",
                      done: allowed, button: "Allow Screen Time") {
                     Task {
                         do {
                             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
                             allowed = AuthorizationCenter.shared.authorizationStatus == .approved
+                            // Notifications are how DO IT gets opened when time's up.
+                            _ = try? await UNUserNotificationCenter.current()
+                                .requestAuthorization(options: [.alert, .sound])
                         } catch {
                             problem = "Screen Time access wasn't turned on. Tap the button to try again."
                         }

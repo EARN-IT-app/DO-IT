@@ -18,7 +18,7 @@ class ShieldConfig: ShieldConfigurationDataSource {
             subtitle: .init(
                 text: "You used all your time on this today. It unlocks at midnight. Go DO IT.",
                 color: UIColor(white: 0.82, alpha: 1)),
-            primaryButtonLabel: .init(text: "OK", color: UIColor.black),
+            primaryButtonLabel: .init(text: "Open DO IT", color: UIColor.black),
             primaryButtonBackgroundColor: UIColor(red: 0, green: 0.82, blue: 0.42, alpha: 1)
         )
     }

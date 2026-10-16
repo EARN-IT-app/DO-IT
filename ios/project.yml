@@ -29,6 +29,7 @@ targets:
       path: App/DOIT.entitlements
       properties:
         com.apple.developer.family-controls: true
+        com.apple.developer.usernotifications.time-sensitive: true
         com.apple.security.application-groups: [group.io.github.wonderbread4912.doit]
     settings:
       base:
@@ -54,6 +55,7 @@ targets:
       path: Monitor/Monitor.entitlements
       properties:
         com.apple.developer.family-controls: true
+        com.apple.developer.usernotifications.time-sensitive: true
         com.apple.security.application-groups: [group.io.github.wonderbread4912.doit]
     settings:
       base:
@@ -82,7 +84,7 @@ targets:
   DOITShieldAction:
     type: app-extension
     platform: iOS
-    sources: [ShieldAction]
+    sources: [ShieldAction, Shared]
     info:
       path: ShieldAction/Info.plist
       properties:
@@ -94,6 +96,7 @@ targets:
       path: ShieldAction/ShieldAction.entitlements
       properties:
         com.apple.developer.family-controls: true
+        com.apple.developer.usernotifications.time-sensitive: true
         com.apple.security.application-groups: [group.io.github.wonderbread4912.doit]
     settings:
       base:

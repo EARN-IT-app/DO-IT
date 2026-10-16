@@ -3,6 +3,7 @@ import Foundation
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
+import UserNotifications
 
 let appGroup = "group.io.github.wonderbread4912.doit"
 let shared = UserDefaults(suiteName: appGroup) ?? .standard
@@ -86,6 +87,19 @@ enum Limit {
     static func lock() {
         shared.set(dayKey(), forKey: "lockedDay")
         Blocker.shieldOn()
+        sendToDOIT(body: "Time's up for today. Tap here to open DO IT.")
+    }
+
+    /// iPhone doesn't let the Screen Time parts of an app open another app,
+    /// so this sends a notification that opens DO IT when tapped.
+    static func sendToDOIT(body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "DO IT"
+        content.body = body
+        content.sound = .default
+        content.interruptionLevel = .timeSensitive
+        let request = UNNotificationRequest(identifier: "doit.open", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 
     /// Called at the start of each day: unlock, apply any changes, and start counting again.
