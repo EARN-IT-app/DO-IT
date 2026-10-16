@@ -19,6 +19,7 @@
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
 		4A61929700B5BB6CA0FEE18B /* AlarmVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF3355EF991707E7A5C9B6C /* AlarmVideo.swift */; };
 		4BBC0DB52E251716AAFB7DB2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C1255B1FD9747657A43C36 /* SettingsView.swift */; };
+		7B91234975235CC0DE9B3347 /* WalkthroughTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD2277A441E24AADF387E29 /* WalkthroughTests.swift */; };
 		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
 		8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */; };
 		93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */; };
@@ -93,6 +94,7 @@
 		441780F300B64F621B420563 /* MirrorPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorPhoto.swift; sourceTree = "<group>"; };
 		4EECED60B7F91B1E8DB6207B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6CF3355EF991707E7A5C9B6C /* AlarmVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmVideo.swift; sourceTree = "<group>"; };
+		6FD2277A441E24AADF387E29 /* WalkthroughTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkthroughTests.swift; sourceTree = "<group>"; };
 		74CE821E9B3878A6CA7F4237 /* Stretches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stretches.swift; sourceTree = "<group>"; };
 		7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E95619B361E2EAED0BB6544 /* Monitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Monitor.entitlements; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				438351FEB20401C6A490D78E /* AlarmVideoTests.swift */,
+				6FD2277A441E24AADF387E29 /* WalkthroughTests.swift */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -423,6 +426,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1EA1870DF6C6FFB54693E277 /* AlarmVideoTests.swift in Sources */,
+				7B91234975235CC0DE9B3347 /* WalkthroughTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
