@@ -143,8 +143,11 @@ body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed
 .chiprow { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
 .lrow { display: flex; align-items: center; gap: 8px; }
 .lrow .switch { flex: 1; }
-.mv { background: #ffffff14; border: 1px solid #ffffff1a; color: var(--fg); width: 40px; height: 40px; border-radius: 12px; font-size: 18px; cursor: pointer; flex: none; }
-.mv[disabled] { opacity: .3; cursor: default; }
+.lrow { padding: 6px 8px 6px 0; border-radius: 14px; background: var(--card); position: relative; }
+/* The ≡ handle: press and drag it to move a card. touch-action stops the page scrolling while dragging. */
+.grip { background: none; border: 0; color: var(--muted); width: 44px; height: 44px; font-size: 24px; cursor: grab; flex: none; touch-action: none; -webkit-user-select: none; user-select: none; }
+.lrow.dragging { z-index: 2; box-shadow: 0 10px 30px #000c; outline: 2px solid var(--good); }
+.lrow.dragging .grip { cursor: grabbing; color: var(--good); }
 #settings { position: fixed; inset: 0; z-index: 80; background: var(--bg); overflow-y: auto;
   padding: max(20px, env(safe-area-inset-top)) 16px max(30px, env(safe-area-inset-bottom)); }
 #settings .in { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
@@ -372,7 +375,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
         <label class="switch"><span><span class="body">Shortcut buttons under the ring</span></span><input type="checkbox" id="setChips" role="switch"></label>
         <div id="layoutList"></div>
         <button class="btn ghost" id="layoutReset" type="button">Reset the layout</button>
-        <p class="note">Turn cards off or move them up and down. Hiding a card doesn't turn it off. Your alarm and locks still work.</p>
+        <p class="note">Drag the ≡ to move a card. Turn a card off to hide it. Hiding a card doesn't turn it off. Your alarm and locks still work.</p>
       </section>
 
       <section class="card">
@@ -900,18 +903,58 @@ function showLayout() {
     const name = CARDS.find((c) => c[0] === id)[1];
     const row = document.createElement("div");
     row.className = "lrow";
-    row.innerHTML = '<label class="switch"><span class="body"></span><input type="checkbox" role="switch"></label>' +
-      '<button class="mv" type="button">↑</button><button class="mv" type="button">↓</button>';
+    row.dataset.id = id;
+    row.innerHTML = '<button class="grip" type="button">≡</button>' +
+      '<label class="switch"><span class="body"></span><input type="checkbox" role="switch"></label>';
     row.querySelector(".body").textContent = name;
-    const box = row.querySelector("input"), [up, down] = row.querySelectorAll(".mv");
+    const box = row.querySelector("input"), grip = row.querySelector(".grip");
     box.checked = !l.hide.includes(id);
     box.onchange = () => { l.hide = l.hide.filter((h) => h !== id).concat(box.checked ? [] : [id]); saveLayout(l); };
-    up.disabled = i === 0; down.disabled = i === l.order.length - 1;
-    up.setAttribute("aria-label", "Move " + name + " up"); down.setAttribute("aria-label", "Move " + name + " down");
-    const move = (by) => { [l.order[i], l.order[i + by]] = [l.order[i + by], l.order[i]]; saveLayout(l); };
-    up.onclick = () => move(-1); down.onclick = () => move(1);
+    grip.setAttribute("aria-label", "Move " + name + ". Drag, or use the up and down arrow keys.");
+    // Keyboard: arrow keys move the card one place.
+    grip.onkeydown = (e) => {
+      const by = e.key === "ArrowUp" ? -1 : e.key === "ArrowDown" ? 1 : 0;
+      if (!by || !l.order[i + by]) return;
+      e.preventDefault();
+      [l.order[i], l.order[i + by]] = [l.order[i + by], l.order[i]];
+      saveLayout(l);
+      list.querySelector('[data-id="' + id + '"] .grip').focus();
+    };
+    grip.onpointerdown = (e) => dragRow(e, row);
     list.append(row);
   });
+}
+// Drag and drop with the ≡ handle. Uses pointer events so it works with a finger on iPhone too.
+function dragRow(e, row) {
+  e.preventDefault();
+  const list = $("layoutList"), grip = e.currentTarget;
+  grip.setPointerCapture(e.pointerId);
+  row.classList.add("dragging");
+  let startY = e.clientY, startTop = row.offsetTop;
+  const move = (ev) => {
+    row.style.transform = "translateY(" + (ev.clientY - startY - (row.offsetTop - startTop)) + "px)";
+    // Swap with the neighbour once the dragged card passes its middle.
+    const mid = row.getBoundingClientRect().top + row.offsetHeight / 2;
+    const prev = row.previousElementSibling, next = row.nextElementSibling;
+    // The neighbour moves, not the dragged card, so the finger keeps hold of it.
+    if (prev && mid < prev.getBoundingClientRect().top + prev.offsetHeight / 2) list.insertBefore(prev, row.nextElementSibling);
+    else if (next && mid > next.getBoundingClientRect().top + next.offsetHeight / 2) list.insertBefore(next, row);
+    else return;
+    row.style.transform = "translateY(" + (ev.clientY - startY - (row.offsetTop - startTop)) + "px)";
+  };
+  const end = () => {
+    grip.removeEventListener("pointermove", move);
+    grip.removeEventListener("pointerup", end);
+    grip.removeEventListener("pointercancel", end);
+    row.classList.remove("dragging");
+    row.style.transform = "";
+    const l = layout();
+    l.order = [...list.children].map((r) => r.dataset.id);
+    saveLayout(l);
+  };
+  grip.addEventListener("pointermove", move);
+  grip.addEventListener("pointerup", end);
+  grip.addEventListener("pointercancel", end);
 }
 $("setChips").onchange = (e) => { const l = layout(); l.chips = e.target.checked; saveLayout(l); };
 $("layoutReset").onclick = () => { store.set("doit-layout", "{}"); applyLayout(); showLayout(); };
