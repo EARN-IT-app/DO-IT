@@ -21,7 +21,7 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: DO IT
+        CFBundleDisplayName: JUST DO IT
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
