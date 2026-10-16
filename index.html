@@ -144,6 +144,9 @@ body.alarm-on #alarmVideo { position: fixed; inset: 0; z-index: -1; width: auto;
 body.alarm-on #ringing .task, body.alarm-on #ringing .note { text-shadow: 0 2px 10px #000; }
 body.alarm-on #ringing .note { color: #fff; }
 body.alarm-on #mirrorBtn { margin-top: auto; }
+/* The alarm words slowly grow and shrink, like breathing. */
+body.alarm-on #ringing .task { transform-origin: left center; animation: breathe 3s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center; }
 </style>
 </head>

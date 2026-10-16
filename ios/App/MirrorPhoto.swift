@@ -9,6 +9,7 @@ struct AlarmView: View {
     @State private var camera = false
     @State private var checking = false
     @State private var message: String?
+    @State private var breathe = false
 
     var body: some View {
         ZStack {
@@ -20,9 +21,15 @@ struct AlarmView: View {
                 .allowsHitTesting(false)
             VStack(spacing: 16) {
                 Image(systemName: "alarm.fill").font(.system(size: 48)).foregroundColor(doitGreen)
-                Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
-                Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
-                    .multilineTextAlignment(.center)
+                // The words slowly grow and shrink, like breathing.
+                VStack(spacing: 16) {
+                    Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
+                    Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
+                        .multilineTextAlignment(.center)
+                }
+                .scaleEffect(breathe ? 1.06 : 1)
+                .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: breathe)
+                .onAppear { breathe = true }
                 if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
                 Spacer()
                 Button { camera = true } label: {
