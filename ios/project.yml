@@ -64,7 +64,7 @@ targets:
   DOITShield:
     type: app-extension
     platform: iOS
-    sources: [Shield]
+    sources: [Shield, Shared]
     info:
       path: Shield/Info.plist
       properties:

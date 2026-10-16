@@ -1,6 +1,6 @@
-// DO IT for iPhone. Setup asks for Screen Time access and the apps to limit.
-// They get a fixed 30 minutes a day. Screen Time then counts the time, and
-// once the day's limit is used up the apps stay blocked until midnight.
+// DO IT for iPhone, with ideas taken from Opal: a fixed 30-minute daily limit on
+// the picked apps, focus mode that can't be stopped, a bedtime lock, a streak,
+// and a block screen with a quote. Screen Time does the counting and blocking.
 import SwiftUI
 import FamilyControls
 import UserNotifications
@@ -116,46 +116,148 @@ struct Step: View {
     }
 }
 
-// MARK: - Today
+// MARK: - Home
+
+let doitGreen = Color(red: 0, green: 0.82, blue: 0.42)
+
+struct Card<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) { content }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.07))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+func clock(_ seconds: Int) -> String {
+    seconds >= 3600
+        ? String(format: "%d:%02d:%02d", seconds / 3600, seconds % 3600 / 60, seconds % 60)
+        : String(format: "%d:%02d", seconds / 60, seconds % 60)
+}
 
 struct TodayView: View {
     var change: () -> Void
     @State private var now = Date()
+    @State private var askFocus: Int?
+    @State private var problem: String?
+    @State private var bedtime = Bedtime.on
     private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        let locked = Limit.lockedToday
-        VStack(spacing: 20) {
-            Spacer()
-            Text("DO IT").font(.system(size: 56, weight: .black))
-            Text(locked ? "DONE FOR TODAY" : "TIME ALLOWED TODAY")
-                .font(.caption.bold()).foregroundColor(locked ? .red : .green)
-            if locked {
-                let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
-                let left = max(0, Int(midnight.timeIntervalSince(now)))
-                Text(String(format: "%d:%02d:%02d", left / 3600, left % 3600 / 60, left % 60))
-                    .font(.system(size: 64, weight: .black).monospacedDigit())
-                    .foregroundColor(.red)
-                Text("You used all your time. Your apps unlock at midnight. Go do the thing you've been putting off.")
-                    .multilineTextAlignment(.center).foregroundColor(.secondary)
-            } else {
-                Text("\(Limit.minutes) min")
-                    .font(.system(size: 64, weight: .black))
-                    .foregroundColor(.green)
-                Text("Your apps are open. Once you've used them for \(Limit.minutes) minutes today, they lock until midnight.")
-                    .multilineTextAlignment(.center).foregroundColor(.secondary)
+        let _ = now // redraw every second
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Text("DO IT").font(.system(size: 44, weight: .black))
+                    Spacer()
+                    Label("\(Limit.streak) day\(Limit.streak == 1 ? "" : "s")", systemImage: "flame.fill")
+                        .font(.headline).foregroundColor(doitGreen)
+                        .accessibilityLabel("\(Limit.streak) day streak")
+                }
+
+                todayCard
+                focusCard
+                bedtimeCard
+
+                Button(action: change) {
+                    Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
+                }
+                .buttonStyle(.bordered)
+                if Limit.hasPending {
+                    Text("Your app changes start tomorrow.").font(.footnote).foregroundColor(.secondary)
+                }
             }
-            if Limit.hasPending {
-                Text("Your changes start tomorrow.").font(.footnote).foregroundColor(.secondary)
-            }
-            Spacer()
-            Button(action: change) {
-                Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
-            }
-            .buttonStyle(.bordered)
+            .padding(20)
         }
-        .padding(32)
         .onReceive(tick) { now = $0 }
+        .alert("Focus for \(askFocus ?? 0) minutes?", isPresented: Binding(get: { askFocus != nil }, set: { if !$0 { askFocus = nil } })) {
+            Button("Lock my apps") {
+                if let m = askFocus {
+                    do { try Focus.start(minutes: m) } catch { problem = "Focus mode couldn't start. Try again in a moment." }
+                }
+            }
+            Button("Not now", role: .cancel) {}
+        } message: {
+            Text("Your apps lock right now. There's no way to cancel until the time is up.")
+        }
+        .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
+            Button("OK", role: .cancel) {}
+        }
+    }
+
+    private var todayCard: some View {
+        Card {
+            if Limit.lockedToday {
+                let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
+                Text("DONE FOR TODAY").font(.caption.bold()).foregroundColor(.red)
+                Text(clock(max(0, Int(midnight.timeIntervalSince(now)))))
+                    .font(.system(size: 48, weight: .black).monospacedDigit()).foregroundColor(.red)
+                Text("You used all \(Limit.minutes) minutes. Your apps unlock at midnight.")
+                    .foregroundColor(.secondary)
+            } else {
+                let used = Limit.usedToday
+                Text("TODAY").font(.caption.bold()).foregroundColor(doitGreen)
+                HStack(spacing: 20) {
+                    ZStack {
+                        Circle().stroke(Color.white.opacity(0.12), lineWidth: 12)
+                        Circle().trim(from: 0, to: CGFloat(used) / CGFloat(Limit.minutes))
+                            .stroke(doitGreen, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                        Text("\(Limit.minutes - used)").font(.system(size: 30, weight: .black))
+                    }
+                    .frame(width: 96, height: 96)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("about \(Limit.minutes - used) min left").font(.title3.bold())
+                        Text("You get \(Limit.minutes) minutes a day. When they're gone, your apps lock until midnight.")
+                            .font(.subheadline).foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private var focusCard: some View {
+        Card {
+            Text("FOCUS MODE").font(.caption.bold()).foregroundColor(doitGreen)
+            if Focus.active {
+                Text(clock(max(0, Int(Focus.endsAt.timeIntervalSince(now)))))
+                    .font(.system(size: 48, weight: .black).monospacedDigit()).foregroundColor(doitGreen)
+                Text("Your apps are locked. Go get it done.").foregroundColor(.secondary)
+            } else {
+                Text("Lock your apps right now. Once it starts, it can't be stopped.").foregroundColor(.secondary)
+                HStack {
+                    ForEach(Focus.choices, id: \.self) { m in
+                        Button { askFocus = m } label: {
+                            Text(m < 60 ? "\(m)m" : "\(m / 60)h").bold().frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .foregroundColor(.black)
+                    }
+                }
+            }
+        }
+    }
+
+    private var bedtimeCard: some View {
+        Card {
+            Toggle(isOn: Binding(get: { bedtime }, set: { want in
+                if want {
+                    do { try Bedtime.turnOn(); bedtime = true } catch { problem = "Bedtime lock couldn't turn on. Try again in a moment." }
+                } else if Bedtime.isNight {
+                    problem = "Bedtime lock can only be turned off during the day."
+                } else {
+                    Bedtime.turnOff(); bedtime = false
+                }
+            })) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("BEDTIME LOCK").font(.caption.bold()).foregroundColor(doitGreen)
+                    Text("Locks your apps every night from 10 PM to 7 AM.").foregroundColor(.secondary)
+                }
+            }
+            .tint(doitGreen)
+        }
     }
 }
 
