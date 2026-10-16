@@ -305,6 +305,8 @@ struct TodayView: View {
                         Task { await MorningAlarm.reschedule() }
                     }
             }
+            Text("Alarm video: \"Just Do It\" by Shia LaBeouf, from #INTRODUCTIONS by LaBeouf, Rönkkö & Turner (2015). Played from YouTube.")
+                .font(.footnote).foregroundColor(.secondary)
         }
     }
 
