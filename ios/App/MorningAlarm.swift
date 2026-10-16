@@ -115,6 +115,11 @@ enum RealAlarms {
     /// Returns false if alarms aren't allowed, so notifications are used instead.
     static func schedule(_ times: [Date]) async -> Bool {
         let manager = AlarmManager.shared
+        // Only ask for alarm permission once the alarm is turned on.
+        if times.isEmpty {
+            for alarm in (try? manager.alarms) ?? [] { try? manager.cancel(id: alarm.id) }
+            return manager.authorizationState == .authorized
+        }
         if manager.authorizationState == .notDetermined {
             _ = try? await manager.requestAuthorization()
         }
