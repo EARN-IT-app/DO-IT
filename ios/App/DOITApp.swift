@@ -83,10 +83,22 @@ struct SetupView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("DO IT").font(.system(size: 56, weight: .black))
-                Text("Pick the apps that waste your time. You get \(Limit.minutes) minutes a day on them. Once that's used up, they stay locked until tomorrow.")
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 14) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(width: 72, height: 72)
+                        .background(LinearGradient(colors: [doitGreenLight, doitGreen], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .shadow(color: doitGreen.opacity(0.5), radius: 18)
+                    Text("DO IT").font(.system(size: 60, weight: .black))
+                    Text("Take back your time.")
+                        .font(.title2.weight(.bold)).foregroundColor(doitGreen)
+                    Text("Pick the apps that waste your time. You get \(Limit.minutes) minutes a day on them. Once that's used up, they stay locked until tomorrow.")
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top, 12)
 
                 Step(number: 1, title: "Let DO IT use Screen Time",
                      detail: "Your iPhone will ask. Tap Continue, then use Face ID or your passcode. Then tap Allow for notifications, so DO IT can open when your time is up.",
@@ -111,8 +123,9 @@ struct SetupView: View {
                     picking = true
                 }
                 .disabled(!allowed)
+                .opacity(allowed ? 1 : 0.5)
 
-                if let problem { Text(problem).foregroundColor(.red) }
+                if let problem { Text(problem).foregroundColor(doitRed) }
 
                 Button {
                     Blocker.selection = selection
@@ -120,13 +133,14 @@ struct SetupView: View {
                     Limit.newDay()
                     finished()
                 } label: {
-                    Text("Start").bold().frame(maxWidth: .infinity, minHeight: 56)
+                    Label("Start", systemImage: "arrow.right")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(BigButton(height: 60))
                 .disabled(!allowed || Blocker.isEmpty(selection))
             }
             .padding(24)
         }
+        .background(GlowBackground())
         .familyActivityPicker(isPresented: $picking, selection: $selection)
     }
 }
@@ -140,36 +154,31 @@ struct Step: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("\(number). \(title)").font(.title3.bold())
+        Card {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(done ? doitGreen : Color.white.opacity(0.1))
+                    if done {
+                        Image(systemName: "checkmark").font(.system(size: 15, weight: .black)).foregroundColor(.black)
+                    } else {
+                        Text("\(number)").font(.system(size: 16, weight: .black)).foregroundColor(.white)
+                    }
+                }
+                .frame(width: 34, height: 34)
+                Text(title).font(.title3.bold())
+            }
             Text(detail).foregroundColor(.secondary)
             if done && number == 1 {
-                Label("Done", systemImage: "checkmark.circle.fill").foregroundColor(.green).bold()
+                Label("Done", systemImage: "checkmark.circle.fill").foregroundColor(doitGreen).bold()
             } else {
-                Button(action: action) {
-                    Text(button).bold().frame(maxWidth: .infinity, minHeight: 50)
-                }
-                .buttonStyle(.bordered)
-                if done { Label("Done", systemImage: "checkmark.circle.fill").foregroundColor(.green).bold() }
+                Button(button, action: action).buttonStyle(SoftButton())
+                if done { Label("Done", systemImage: "checkmark.circle.fill").foregroundColor(doitGreen).bold() }
             }
         }
     }
 }
 
 // MARK: - Home
-
-let doitGreen = Color(red: 0, green: 0.82, blue: 0.42)
-
-struct Card<Content: View>: View {
-    @ViewBuilder var content: Content
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) { content }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white.opacity(0.07))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-    }
-}
 
 func clock(_ seconds: Int) -> String {
     seconds >= 3600
@@ -199,34 +208,18 @@ struct TodayView: View {
         let _ = now // redraw every second
         ScrollViewReader { scroll in
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text("DO IT").font(.system(size: 30, weight: .black))
-                    Spacer()
-                    Label("\(Limit.streak) day\(Limit.streak == 1 ? "" : "s")", systemImage: "flame.fill")
-                        .font(.headline).foregroundColor(doitGreen)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(Color.white.opacity(0.08)).clipShape(Capsule())
-                        .accessibilityLabel("\(Limit.streak) day streak")
-                    Button { settings = true } label: {
-                        Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.white)
-                            .frame(width: 44, height: 44).background(Color.white.opacity(0.08)).clipShape(Circle())
-                    }
-                    .accessibilityLabel("Settings")
-                }
-                if !name.isEmpty {
-                    Text("Hi, \(name). Let's get things done.").font(.headline).foregroundColor(.secondary)
-                }
+            VStack(alignment: .leading, spacing: 18) {
+                header
 
                 todayCard
                 // Shortcuts under the ring: each jumps to its settings below.
                 if layoutChips {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 10) {
                         if shown.contains("focus") {
                             chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
                         }
                         if shown.contains("bedtime") {
-                            chip("moon.fill", "Bedtime", bedtime ? "On · 10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
+                            chip("moon.fill", "Bedtime", bedtime ? "10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
                         }
                         if shown.contains("alarm") {
                             chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
@@ -235,21 +228,21 @@ struct TodayView: View {
                     }
                 }
                 // The cards, in the order the person picked in Settings > Home screen.
-                ForEach(shown, id: \.self) { homeCard($0) }
+                ForEach(shown, id: \.self) { homeCard($0).id($0) }
 
                 Button(action: change) {
-                    Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
+                    Label("Change apps", systemImage: "square.grid.2x2.fill")
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(SoftButton())
                 if Limit.hasPending {
                     Text("Your app changes start tomorrow.").font(.footnote).foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
                 }
             }
             .padding(20)
         }
         }
-        .background(RadialGradient(colors: [Color(red: 0.05, green: 0.23, blue: 0.13), .black],
-                                   center: UnitPoint(x: 0.5, y: 0.2), startRadius: 0, endRadius: 420).ignoresSafeArea())
+        .background(GlowBackground(color: Limit.lockedToday ? doitRed : doitGreen))
         .onReceive(tick) { now = $0 }
         .alert("Focus for \(askFocus ?? 0) minutes?", isPresented: Binding(get: { askFocus != nil }, set: { if !$0 { askFocus = nil } })) {
             Button("Lock my apps") {
@@ -273,6 +266,38 @@ struct TodayView: View {
 
     private var shown: [String] { Layout.shown(order: layoutOrder, hidden: layoutHidden) }
 
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: now)
+        let part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
+        return name.isEmpty ? part : "\(part), \(name)"
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 10) {
+                Text("DO IT").font(.system(size: 34, weight: .black))
+                Spacer()
+                HStack(spacing: 6) {
+                    Image(systemName: "flame.fill")
+                    Text("\(Limit.streak)").monospacedDigit()
+                }
+                .font(.headline.weight(.heavy)).foregroundColor(.black)
+                .padding(.horizontal, 14).frame(height: 40)
+                .background(LinearGradient(colors: [doitGreenLight, doitGreen], startPoint: .top, endPoint: .bottom))
+                .clipShape(Capsule())
+                .shadow(color: doitGreen.opacity(0.4), radius: 10)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(Limit.streak) day streak")
+                Button { settings = true } label: {
+                    Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.white)
+                        .frame(width: 40, height: 40).background(Color.white.opacity(0.1)).clipShape(Circle())
+                }
+                .accessibilityLabel("Settings")
+            }
+            Text(greeting).font(.title3.weight(.semibold)).foregroundColor(.secondary)
+        }
+    }
+
     @ViewBuilder private func homeCard(_ id: String) -> some View {
         switch id {
         case "focus": focusCard
@@ -287,11 +312,18 @@ struct TodayView: View {
 
     private var goalCard: some View {
         Card {
-            Text("TOMORROW'S GOAL").font(.caption.bold()).foregroundColor(doitGreen)
-            if !Goal.today.isEmpty { Text("Today's goal: \(Goal.today)") }
+            CardHeader(icon: "target", title: "TOMORROW'S GOAL")
+            if !Goal.today.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.seal.fill").foregroundColor(doitGreen)
+                    Text("Today: \(Goal.today)").bold()
+                }
+            }
             Text("What do you want to get done tomorrow?").font(.headline)
             TextField("Finish my essay", text: $goal)
-                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal, 14).frame(height: 48)
+                .background(Color.white.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .onChange(of: goal) { Goal.save($0.trimmingCharacters(in: .whitespaces), Goal.tomorrow) }
             Text("It shows up on your alarm in the morning.").font(.footnote).foregroundColor(.secondary)
         }
@@ -301,7 +333,7 @@ struct TodayView: View {
     /// DO IT show this inside a Screen Time report, so the numbers are drawn by the report.
     private var opensCard: some View {
         Card {
-            Text("APP CHECKER").font(.caption.bold()).foregroundColor(doitGreen)
+            CardHeader(icon: "hand.tap.fill", title: "APP CHECKER")
             Text("How many times you picked up your phone to use each app today.").foregroundColor(.secondary)
             DeviceActivityReport(.opens, filter: DeviceActivityFilter(
                 segment: .daily(during: DateInterval(start: Calendar.current.startOfDay(for: Date()), end: Date()))))
@@ -317,22 +349,32 @@ struct TodayView: View {
         let weekday = DateFormatter(); weekday.dateFormat = "EEEEE"
         let longDay = DateFormatter(); longDay.dateFormat = "EEEE"
         return Card {
-            Text("THIS WEEK").font(.caption.bold()).foregroundColor(doitGreen)
-            HStack(alignment: .bottom, spacing: 8) {
+            CardHeader(icon: "chart.bar.fill", title: "THIS WEEK") {
+                Text("\(mins.reduce(0, +)) min").font(.subheadline.weight(.bold)).foregroundColor(.secondary)
+            }
+            HStack(alignment: .bottom, spacing: 10) {
                 ForEach(0..<7, id: \.self) { i in
-                    VStack(spacing: 6) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(mins[i] >= Limit.minutes ? Color.red : doitGreen)
-                            .frame(height: max(4, CGFloat(min(mins[i], Limit.minutes)) / CGFloat(Limit.minutes) * 110))
-                        Text(weekday.string(from: days[i])).font(.caption.bold())
-                            .foregroundColor(i == 6 ? .white : .secondary)
+                    let over = mins[i] >= Limit.minutes
+                    VStack(spacing: 8) {
+                        ZStack(alignment: .bottom) {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.white.opacity(0.06))
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(LinearGradient(colors: over ? [doitRed, doitRed.opacity(0.6)] : [doitGreenLight, doitGreenDark],
+                                                     startPoint: .top, endPoint: .bottom))
+                                .frame(height: max(6, CGFloat(min(mins[i], Limit.minutes)) / CGFloat(Limit.minutes) * 110))
+                        }
+                        .frame(height: 110)
+                        Text(weekday.string(from: days[i])).font(.caption.weight(.heavy))
+                            .foregroundColor(i == 6 ? .black : .secondary)
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(i == 6 ? doitGreen : .clear))
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
-            .frame(height: 135, alignment: .bottom)
             if let best {
-                Text("\(mins.reduce(0, +)) minutes used this week. Best day: \(longDay.string(from: best.0)) (\(best.1) min).")
+                Text("Best day: \(longDay.string(from: best.0)), with \(best.1) min.")
                     .font(.footnote).foregroundColor(.secondary)
             }
         }
@@ -341,85 +383,67 @@ struct TodayView: View {
     private func chip(_ icon: String, _ title: String, _ detail: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 6) {
-                Image(systemName: icon).font(.title2).foregroundColor(doitGreen)
-                Text(title).bold().foregroundColor(.white)
-                Text(detail).font(.footnote).foregroundColor(.secondary).lineLimit(1).minimumScaleFactor(0.7)
+                Image(systemName: icon).font(.system(size: 20, weight: .bold)).foregroundColor(doitGreen)
+                    .frame(height: 24)
+                Text(title).font(.subheadline.weight(.bold)).foregroundColor(.white)
+                Text(detail).font(.caption).foregroundColor(.secondary).lineLimit(1).minimumScaleFactor(0.7)
             }
-            .frame(maxWidth: .infinity).padding(.vertical, 16)
+            .frame(maxWidth: .infinity).padding(.vertical, 14)
             .background(Color.white.opacity(0.07))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.1)))
-            .clipShape(RoundedRectangle(cornerRadius: 22))
+            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Color.white.opacity(0.09)))
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder private var todayCard: some View {
         if !Limit.lockedToday {
-            // One big ring for the time left today.
+            // One big glowing ring for the time left today.
             let used = Limit.usedToday
-            VStack(spacing: 10) {
-                ZStack {
-                    Circle().stroke(Color.white.opacity(0.1), lineWidth: 16)
-                    Circle().trim(from: 0, to: CGFloat(Limit.minutes - used) / CGFloat(Limit.minutes))
-                        .stroke(doitGreen, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    VStack(spacing: 4) {
-                        Text("\(Limit.minutes - used)").font(.system(size: 84, weight: .black))
-                        Text("minutes left today").font(.headline).foregroundColor(.secondary)
-                    }
+            VStack(spacing: 22) {
+                TimeRing(left: Limit.minutes - used, total: Limit.minutes)
+                    .frame(width: 250, height: 250)
+                    .padding(.top, 10)
+                HStack(spacing: 0) {
+                    Stat(value: "\(used)m", label: "Used")
+                    Divider().frame(height: 30).overlay(Color.white.opacity(0.15))
+                    Stat(value: "\(Limit.minutes)m", label: "Daily limit")
+                    Divider().frame(height: 30).overlay(Color.white.opacity(0.15))
+                    Stat(value: "\(Limit.streak)", label: Limit.streak == 1 ? "Day streak" : "Days streak")
                 }
-                .frame(width: 260, height: 260)
-                Text("You've used \(used) of your \(Limit.minutes) minutes.").foregroundColor(.secondary)
+                .padding(.vertical, 14)
+                .background(Color.white.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
         } else {
-        Card {
-            if Limit.lockedToday {
-                let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
-                Text("DONE FOR TODAY").font(.caption.bold()).foregroundColor(.red)
+            let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
+            Card {
+                CardHeader(icon: "lock.fill", title: "DONE FOR TODAY", color: doitRed)
                 Text(clock(max(0, Int(midnight.timeIntervalSince(now)))))
-                    .font(.system(size: 48, weight: .black).monospacedDigit()).foregroundColor(.red)
+                    .font(.system(size: 56, weight: .black, design: .rounded).monospacedDigit())
+                    .foregroundColor(doitRed)
                 Text("You used all \(Limit.minutes) minutes. Your apps unlock at midnight.")
                     .foregroundColor(.secondary)
-            } else {
-                let used = Limit.usedToday
-                Text("TODAY").font(.caption.bold()).foregroundColor(doitGreen)
-                HStack(spacing: 20) {
-                    ZStack {
-                        Circle().stroke(Color.white.opacity(0.12), lineWidth: 12)
-                        Circle().trim(from: 0, to: CGFloat(used) / CGFloat(Limit.minutes))
-                            .stroke(doitGreen, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                        Text("\(Limit.minutes - used)").font(.system(size: 30, weight: .black))
-                    }
-                    .frame(width: 96, height: 96)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("about \(Limit.minutes - used) min left").font(.title3.bold())
-                        Text("You get \(Limit.minutes) minutes a day. When they're gone, your apps lock until midnight.")
-                            .font(.subheadline).foregroundColor(.secondary)
-                    }
-                }
             }
-        }
         }
     }
 
     private var focusCard: some View {
         Card {
-            Text("FOCUS MODE").font(.caption.bold()).foregroundColor(doitGreen)
+            CardHeader(icon: "scope", title: "FOCUS MODE")
             if Focus.active {
                 Text(clock(max(0, Int(Focus.endsAt.timeIntervalSince(now)))))
-                    .font(.system(size: 48, weight: .black).monospacedDigit()).foregroundColor(doitGreen)
+                    .font(.system(size: 52, weight: .black, design: .rounded).monospacedDigit()).foregroundColor(doitGreen)
                 Text("Your apps are locked. Go get it done.").foregroundColor(.secondary)
             } else {
                 Text("Lock your apps right now. Once it starts, it can't be stopped.").foregroundColor(.secondary)
-                HStack {
+                HStack(spacing: 10) {
                     ForEach(Focus.choices, id: \.self) { m in
                         Button { askFocus = m } label: {
-                            Text(m < 60 ? "\(m)m" : "\(m / 60)h").bold().frame(maxWidth: .infinity, minHeight: 44)
+                            Text(m < 60 ? "\(m)m" : "\(m / 60)h")
                         }
-                        .buttonStyle(.borderedProminent)
-                        .foregroundColor(.black)
+                        .buttonStyle(BigButton(height: 48))
                     }
                 }
             }
@@ -428,22 +452,21 @@ struct TodayView: View {
 
     private var alarmCard: some View {
         Card {
-            Toggle(isOn: Binding(get: { alarmOn }, set: { want in
-                if !want && MorningAlarm.ringing {
-                    problem = "The alarm can't be turned off while it's going off. Take a picture of the sink."
-                    return
-                }
-                alarmOn = want
-                MorningAlarm.on = want
-                Task { await MorningAlarm.reschedule() }
-            })) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("MORNING ALARM").font(.caption.bold()).foregroundColor(doitGreen)
-                    Text("Goes off every minute, with no snooze, until you get up and take a picture of the sink.")
-                        .foregroundColor(.secondary)
-                }
+            CardHeader(icon: "alarm.fill", title: "MORNING ALARM") {
+                Toggle("Morning alarm", isOn: Binding(get: { alarmOn }, set: { want in
+                    if !want && MorningAlarm.ringing {
+                        problem = "The alarm can't be turned off while it's going off. Take a picture of the sink."
+                        return
+                    }
+                    alarmOn = want
+                    MorningAlarm.on = want
+                    Task { await MorningAlarm.reschedule() }
+                }))
+                .labelsHidden()
+                .tint(doitGreen)
             }
-            .tint(doitGreen)
+            Text("Goes off every few minutes, with no snooze, until you get up and take a picture of the sink.")
+                .foregroundColor(.secondary)
             if alarmOn {
                 DatePicker("Wake up at", selection: $alarmTime, displayedComponents: .hourAndMinute)
                     .font(.headline)
@@ -455,27 +478,26 @@ struct TodayView: View {
                     }
             }
             Text("Alarm video: \"Just Do It\" by Shia LaBeouf, from #INTRODUCTIONS by LaBeouf, Rönkkö & Turner (2015). Played from YouTube.")
-                .font(.footnote).foregroundColor(.secondary)
+                .font(.caption2).foregroundColor(.secondary.opacity(0.7))
         }
     }
 
     private var bedtimeCard: some View {
         Card {
-            Toggle(isOn: Binding(get: { bedtime }, set: { want in
-                if want {
-                    do { try Bedtime.turnOn(); bedtime = true } catch { problem = "Bedtime lock couldn't turn on. Try again in a moment." }
-                } else if Bedtime.isNight {
-                    problem = "Bedtime lock can only be turned off during the day."
-                } else {
-                    Bedtime.turnOff(); bedtime = false
-                }
-            })) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("BEDTIME LOCK").font(.caption.bold()).foregroundColor(doitGreen)
-                    Text("Locks your apps every night from 10 PM to 7 AM.").foregroundColor(.secondary)
-                }
+            CardHeader(icon: "moon.fill", title: "BEDTIME LOCK") {
+                Toggle("Bedtime lock", isOn: Binding(get: { bedtime }, set: { want in
+                    if want {
+                        do { try Bedtime.turnOn(); bedtime = true } catch { problem = "Bedtime lock couldn't turn on. Try again in a moment." }
+                    } else if Bedtime.isNight {
+                        problem = "Bedtime lock can only be turned off during the day."
+                    } else {
+                        Bedtime.turnOff(); bedtime = false
+                    }
+                }))
+                .labelsHidden()
+                .tint(doitGreen)
             }
-            .tint(doitGreen)
+            Text("Locks your apps every night from 10 PM to 7 AM.").foregroundColor(.secondary)
         }
     }
 }
@@ -489,25 +511,24 @@ struct ChangeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Change apps").font(.title.bold())
+            CardHeader(icon: "square.grid.2x2.fill", title: "CHANGE APPS")
+            Text("Change apps").font(.largeTitle.weight(.black))
             Text("Changes start tomorrow, so they can't be used to get more time today.")
                 .foregroundColor(.secondary)
-            Button { picking = true } label: {
-                Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
-            }
-            .buttonStyle(.bordered)
+            Button("Pick apps") { picking = true }
+                .buttonStyle(SoftButton())
             Spacer()
-            Button {
+            Button("Save for tomorrow") {
                 Limit.pendingSelection = selection
                 dismiss()
-            } label: {
-                Text("Save for tomorrow").bold().frame(maxWidth: .infinity, minHeight: 56)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(BigButton())
             .disabled(Blocker.isEmpty(selection))
-            Button("Cancel") { dismiss() }.frame(maxWidth: .infinity)
+            Button("Cancel") { dismiss() }.foregroundColor(.white).frame(maxWidth: .infinity)
         }
         .padding(24)
+        .background(GlowBackground())
+        .preferredColorScheme(.dark)
         .familyActivityPicker(isPresented: $picking, selection: $selection)
     }
 }
