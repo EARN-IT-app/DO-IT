@@ -21,6 +21,7 @@
 		4BBC0DB52E251716AAFB7DB2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C1255B1FD9747657A43C36 /* SettingsView.swift */; };
 		7B91234975235CC0DE9B3347 /* WalkthroughTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD2277A441E24AADF387E29 /* WalkthroughTests.swift */; };
 		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
+		89BC0094374AE4D544AE723A /* StopSign.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4DF38B31051ECBFB7E9E5 /* StopSign.swift */; };
 		8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */; };
 		93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */; };
 		969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -103,6 +104,7 @@
 		90F031732A6B5AFC79AE860B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfig.swift; sourceTree = "<group>"; };
 		9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DOITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9DC4DF38B31051ECBFB7E9E5 /* StopSign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopSign.swift; sourceTree = "<group>"; };
 		A6462981646F5292DD39FA26 /* DOIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DOIT.entitlements; sourceTree = "<group>"; };
 		AB0EC15108FA45C51BF7EDE1 /* DOIT.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DOIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				441780F300B64F621B420563 /* MirrorPhoto.swift */,
 				D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */,
 				F5C1255B1FD9747657A43C36 /* SettingsView.swift */,
+				9DC4DF38B31051ECBFB7E9E5 /* StopSign.swift */,
 				74CE821E9B3878A6CA7F4237 /* Stretches.swift */,
 			);
 			path = App;
@@ -408,6 +411,7 @@
 				40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */,
 				4BBC0DB52E251716AAFB7DB2 /* SettingsView.swift in Sources */,
 				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
+				89BC0094374AE4D544AE723A /* StopSign.swift in Sources */,
 				E3B16BCB23D98D8427A4FF9B /* Stretches.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
