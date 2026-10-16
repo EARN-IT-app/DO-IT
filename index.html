@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>DO IT</title>
-<meta name="description" content="Get up and take a photo that proves you're working before you open a distracting app.">
+<meta name="description" content="Set a daily time limit on the apps that eat your day. When the time is gone, they stay locked until tomorrow.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DO IT">
 <meta name="theme-color" content="#000000">
@@ -71,6 +71,7 @@ a.btn { text-decoration: none; }
 .verdict.fail { color: var(--bad); }
 .timer { font-family: var(--display); font-size: 56px; line-height: 1; margin: 0; font-variant-numeric: tabular-nums; color: var(--good); }
 .timer.up { color: var(--bad); }
+.big { font-family: var(--display); font-size: 44px; line-height: 1; margin: 0; color: var(--good); }
 label { font-weight: 600; font-size: 15px; }
 select {
   width: 100%; min-height: 50px; border-radius: 12px; border: 2px solid var(--line);
@@ -109,7 +110,7 @@ select {
 <body>
 <main>
   <h1><span>DO</span><br><span>IT</span></h1>
-  <p class="lede">Before you open that app, get up, go outside, and prove it. Then watch the video. Then you get your break.</p>
+  <p class="lede">You only get so much time on your apps each day. When today's time is used up, they stay locked until tomorrow.</p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -119,33 +120,39 @@ select {
     <button class="btn ghost" id="hideQuick" type="button">I'm all set, hide this</button>
   </section>
 
-  <section class="card" id="ask">
-    <p class="eyebrow">Step 1 of 3</p>
-    <p class="task" id="taskText">Get up and go outside. Show me the sky.</p>
-    <p class="note" id="hint">Point the camera up at the sky, or at anything outside, like a car, a bike, a bench or a stop sign.</p>
-    <input type="file" id="photo" accept="image/*" capture="environment">
-    <button class="btn" id="snap" type="button">Open camera</button>
-    <video id="cam" class="cam" playsinline muted hidden></video>
-    <button class="btn" id="shoot" type="button" hidden>Take the photo</button>
-    <button class="btn ghost" id="pick" type="button" hidden>Choose a photo instead</button>
-    <img id="preview" alt="Your photo" hidden>
-    <p class="verdict" id="verdict" hidden></p>
-    <button class="btn ghost" id="retry" type="button" hidden>Try another photo</button>
+  <section class="card" id="go">
+    <p class="eyebrow">Time left today</p>
+    <p class="big" id="todayLeft">30 minutes</p>
+    <label for="minutes">How long do you need right now?</label>
+    <select id="minutes"></select>
+    <button class="btn" id="start" type="button">Start</button>
   </section>
 
-  <section class="card pop" id="earned" hidden>
-    <p class="eyebrow">Step 3 of 3: your break</p>
+  <section class="card pop" id="running" hidden>
+    <p class="eyebrow">You're in</p>
     <p class="timer" id="clock">10:00</p>
-    <p class="note" id="breakNote"></p>
+    <p class="note" id="runNote"></p>
+    <button class="btn ghost" id="doneEarly" type="button">I'm done, lock it again</button>
+  </section>
+
+  <section class="card pop" id="locked" hidden>
+    <p class="eyebrow">Done for today</p>
+    <p class="task">You used all your time. Your apps are locked until tomorrow.</p>
+    <p class="timer up" id="lockClock">0:00:00</p>
+    <p class="note">That's how long until they unlock. Go do the thing you've been putting off.</p>
   </section>
 
   <section class="card">
-    <label for="minutes">Break length after you pass</label>
-    <select id="minutes">
-      <option value="5">5 minutes</option>
-      <option value="10" selected>10 minutes</option>
+    <label for="limit">Time allowed on your apps each day</label>
+    <select id="limit">
       <option value="15">15 minutes</option>
+      <option value="30">30 minutes</option>
+      <option value="45">45 minutes</option>
+      <option value="60">1 hour</option>
+      <option value="90">1 hour 30 minutes</option>
+      <option value="120">2 hours</option>
     </select>
+    <p class="note" id="limitNote"></p>
   </section>
 
   <section class="card" id="setup">
@@ -161,37 +168,17 @@ select {
     <a class="btn" href="shortcuts://">Open Shortcuts</a>
     <p class="addr" id="addr"></p>
     <button class="btn ghost" id="copy" type="button">Copy the DO IT address</button>
-    <p class="note">Now whenever you open one of those apps, DO IT opens first. The photo check runs on your phone, so your photos never leave it.</p>
+    <p class="note">Now whenever you open one of those apps, DO IT opens first and takes the time from today's allowance.</p>
   </section>
 </main>
-
-<div class="pop-wrap" id="videoPop" role="dialog" aria-modal="true" aria-labelledby="popTitle" hidden>
-  <div class="pop-box gate" id="gate">
-    <p class="pop-title big" id="popTitle">STOP.</p>
-    <p class="body">Step 2 of 3. Nice work getting outside. Now you're watching this.</p>
-    <button class="btn tap" id="tapPlay" type="button">TAP TO JUST DO IT</button>
-  </div>
-  <div class="pop-box stage" id="stage">
-    <p class="pop-title">JUST DO IT.</p>
-    <div class="video" id="videoSlot"><div id="ytPlayer"></div></div>
-    <button class="btn" id="closeVideo" type="button" disabled>Watch the video to unlock</button>
-  </div>
-</div>
-
-<script src="https://www.youtube.com/iframe_api"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script>
-// The challenge: get outside. The photo passes if the top of it looks like sky,
-// or if the on-phone checker (the COCO object list) spots something that lives outdoors.
-const OUTDOOR_THINGS = ["car", "truck", "bus", "bicycle", "motorcycle", "traffic light", "stop sign",
-  "fire hydrant", "parking meter", "bench", "bird", "horse", "cow", "sheep", "train", "boat", "airplane"];
-const BREAK_KEY = "doit-break-end";
-// Opened inside the DO IT app on iPhone or Android (?from=ios / ?from=android): those apps do the
-// blocking, so the iPhone Shortcuts help is hidden and the break is handed back to the app.
+// DO IT: a daily time allowance for distracting apps. Each visit takes time out
+// of today's allowance. Once it's used up, DO IT stays locked until midnight.
+const SESSION_KEY = "doit-break-end";
+// Opened inside the Android app (?from=android): that app does the blocking,
+// so the iPhone Shortcuts help is hidden and the time is handed to the app.
 const FROM = new URLSearchParams(location.search).get("from");
 const APP_KEY = "doit-app";
-const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 const ADDRESS = location.href.split("#")[0].split("?")[0];
 
 const $ = (id) => document.getElementById(id);
@@ -200,273 +187,95 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
 };
 
-$("minutes").value = store.get("doit-minutes") || "10";
+if (FROM === "android" || FROM === "ios") store.set(APP_KEY, FROM);
+const DEVICE_APP = store.get(APP_KEY);
+if (DEVICE_APP) { $("quick").hidden = true; $("setup").hidden = true; }
+if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
+$("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 $("addr").textContent = ADDRESS;
-$("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
 
-// Start loading the photo checker as soon as the page opens.
-let modelPromise = (window.cocoSsd
-  ? cocoSsd.load({ base: "lite_mobilenet_v2" })
-  : Promise.reject(new Error("checker missing"))
-).catch(() => null);
+// A new limit only starts tomorrow, so it can't be raised to get back in today.
+const dayKey = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+const savedLimit = () => Number(store.get("doit-limit") || 30);
+const todayLimit = () => Number(store.get("doit-limit-" + dayKey()) || savedLimit());
+const usedMs = () => Number(store.get("doit-used-" + dayKey()) || 0);
+const leftMs = () => Math.max(0, todayLimit() * 60000 - usedMs());
+const fmtMin = (ms) => { const m = Math.ceil(ms / 60000); return m + (m === 1 ? " minute" : " minutes"); };
+
+$("limit").onchange = (e) => {
+  if (!store.get("doit-limit-" + dayKey())) store.set("doit-limit-" + dayKey(), String(savedLimit()));
+  store.set("doit-limit", e.target.value);
+  showGo();
+};
 
 let timerId = null;
 
-if (FROM === "mac" || FROM === "android" || FROM === "ios") store.set(APP_KEY, FROM);
-const DEVICE_APP = store.get(APP_KEY);
-if (DEVICE_APP) { $("quick").hidden = true; $("setup").hidden = true; }
-// iPhone Screen Time only allows breaks of 15 minutes or more.
-if (DEVICE_APP === "ios") {
-  $("minutes").innerHTML = '<option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option>';
-  $("minutes").value = ["15", "30", "45"].includes(store.get("doit-minutes")) ? store.get("doit-minutes") : "15";
+function showGo() {
+  clearInterval(timerId);
+  $("running").hidden = true;
+  $("locked").hidden = true;
+  $("go").hidden = false;
+  $("limit").value = String(savedLimit());
+  $("limitNote").textContent = savedLimit() !== todayLimit()
+    ? "Your new limit starts tomorrow. Today you still have " + todayLimit() + " minutes in total."
+    : "";
+  const left = leftMs();
+  $("todayLeft").textContent = fmtMin(left);
+  // Offer chunks up to what's left today.
+  const leftMin = Math.ceil(left / 60000);
+  const choices = [5, 10, 15, 30].filter((m) => m < leftMin);
+  choices.push(leftMin);
+  const remembered = Number(store.get("doit-minutes") || 10);
+  $("minutes").innerHTML = choices.map((m) =>
+    '<option value="' + m + '">' + (m === leftMin ? "All of it (" + fmtMin(m * 60000) + ")" : m + " minutes") + "</option>").join("");
+  $("minutes").value = String(choices.includes(remembered) ? remembered : choices[0]);
 }
-if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
-$("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
-// Step 2, the motivation video: it pops up after the outdoor photo passes.
-// iPhones only play sound after a tap, so the pop-up opens on one big button.
-// That tap starts the video with sound on, through the YouTube player API.
-let player = null, playerReady = false;
-function buildPlayer() {
-  if (!window.YT || !YT.Player || player) return;
-  player = new YT.Player("ytPlayer", {
-    videoId: "ZXsQAXx_ao0",
-    host: "https://www.youtube-nocookie.com",
-    playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
-    events: {
-      onReady: () => { playerReady = true; },
-      onStateChange: (e) => { if (e.data === 0) unlockClose(); },
-      onError: () => unlockClose(),
-    },
-  });
-}
-window.onYouTubeIframeAPIReady = buildPlayer;
-// The pop-up only closes with its button, and the button stays locked until
-// the video ends (or 70 seconds after the tap, in case the end isn't reported).
-const LOCK_SECONDS = 70;
-let lockTimer = null;
-function lockClose() {
-  clearInterval(lockTimer);
-  $("closeVideo").disabled = true;
-  $("closeVideo").textContent = "Watch the video to unlock";
-}
-function unlockClose() {
-  clearInterval(lockTimer);
-  $("closeVideo").disabled = false;
-  $("closeVideo").textContent = "OK, I'll do it";
-}
-function startLockCountdown() {
-  let left = LOCK_SECONDS;
-  clearInterval(lockTimer);
-  lockTimer = setInterval(() => {
-    // Only count down while the video is actually playing, so pausing doesn't skip it.
-    if (playerReady && player.getPlayerState && player.getPlayerState() !== 1) {
-      $("closeVideo").textContent = "Keep watching to unlock (" + left + "s)";
-      return;
-    }
-    left--;
-    if (left <= 0) return unlockClose();
-    $("closeVideo").textContent = "Unlocks in " + left + "s";
-  }, 1000);
-}
-function openVideo() {
-  lockClose();
-  document.body.style.overflow = "hidden";
-  $("videoPop").hidden = false;
-  $("gate").hidden = false;
-  $("stage").classList.add("waiting");
-  $("tapPlay").focus();
-  buildPlayer();
-}
-$("tapPlay").onclick = () => {
-  $("gate").hidden = true;
-  $("stage").classList.remove("waiting");
-  startLockCountdown();
-  if (playerReady) {
-    player.unMute();
-    player.setVolume(100);
-    player.playVideo();
-  } else {
-    // Player not loaded yet: load the plain video with sound, started by this tap.
-    $("videoSlot").innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/ZXsQAXx_ao0?autoplay=1&playsinline=1&rel=0" title="Shia LaBeouf: Just Do It" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-  }
-};
-function closeVideo() {
-  if ($("closeVideo").disabled) return;
-  document.body.style.overflow = "";
-  $("videoPop").hidden = true;
-  if (playerReady) player.stopVideo();
-  else $("videoSlot").innerHTML = '<div id="ytPlayer"></div>';
-  startBreak();
-}
-$("closeVideo").onclick = closeVideo;
+$("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
 
-// Phones open their camera from the photo button. Computers have no such camera
-// screen, so DO IT shows the webcam itself, with a way to pick a photo file instead.
-let camStream = null;
-async function openWebcam() {
-  try {
-    camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-  } catch {
-    return $("photo").click();
-  }
-  $("cam").srcObject = camStream;
-  $("cam").hidden = false;
-  $("shoot").hidden = false;
-  $("pick").hidden = false;
-  $("snap").hidden = true;
-  $("retry").hidden = true;
-  $("verdict").hidden = true;
-  $("preview").hidden = true;
-  await $("cam").play().catch(() => {});
-}
-function stopWebcam() {
-  if (camStream) camStream.getTracks().forEach((t) => t.stop());
-  camStream = null;
-  $("cam").hidden = true;
-  $("shoot").hidden = true;
-  $("pick").hidden = true;
-}
-function takePhoto() {
-  if (IS_TOUCH || !navigator.mediaDevices?.getUserMedia) return $("photo").click();
-  openWebcam();
-}
-$("snap").onclick = takePhoto;
-$("retry").onclick = () => { $("photo").value = ""; takePhoto(); };
-$("pick").onclick = () => { stopWebcam(); $("photo").removeAttribute("capture"); $("photo").click(); };
-$("shoot").onclick = () => {
-  const v = $("cam");
-  const c = document.createElement("canvas");
-  c.width = v.videoWidth || 640;
-  c.height = v.videoHeight || 480;
-  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
-  stopWebcam();
-  c.toBlob((blob) => blob && checkPhoto(blob), "image/jpeg", 0.9);
-};
-$("copy").onclick = async () => {
-  try {
-    await navigator.clipboard.writeText(ADDRESS);
-    $("copy").textContent = "Copied. Now paste it in Shortcuts.";
-  } catch {
-    const r = document.createRange(); r.selectNodeContents($("addr"));
-    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-    $("copy").textContent = "Press and hold the address above, then tap Copy.";
-  }
+$("start").onclick = () => {
+  store.set("doit-limit-" + dayKey(), String(todayLimit())); // today's limit is now fixed
+  const len = Math.min(Number($("minutes").value) * 60000, leftMs());
+  if (len <= 0) return showLocked();
+  store.set("doit-used-" + dayKey(), String(usedMs() + len));
+  const end = Date.now() + len;
+  store.set(SESSION_KEY, String(end));
+  showRunning(end);
+  // Tell the Android app to let the blocked apps open for this time.
+  if (DEVICE_APP) location.href = "doit://break?minutes=" + Math.ceil(len / 60000);
 };
 
-function reset() {
-  $("preview").hidden = true;
-  $("verdict").hidden = true;
-  $("retry").hidden = true;
-  $("snap").hidden = false;
-  $("photo").value = "";
-}
-
-function say(text, kind) {
-  const v = $("verdict");
-  v.textContent = text;
-  v.className = "verdict" + (kind ? " " + kind : "");
-  v.hidden = false;
-}
-
-// Draw the photo small so checking is fast on a phone.
-function loadSmall(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, 640 / Math.max(img.width, img.height));
-      const c = document.createElement("canvas");
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      resolve(c);
-    };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-// Sky check: the top third of the photo should be bright and blue-ish or overcast grey,
-// with little detail (no ceiling lights, walls with pictures, and so on).
-function looksLikeSky(canvas) {
-  const ctx = canvas.getContext("2d");
-  const h = Math.max(1, Math.floor(canvas.height / 3));
-  const { data } = ctx.getImageData(0, 0, canvas.width, h);
-  let r = 0, g = 0, b = 0, n = 0, skyish = 0;
-  for (let i = 0; i < data.length; i += 16) {
-    const R = data[i], G = data[i + 1], B = data[i + 2];
-    r += R; g += G; b += B; n++;
-    const bright = (R + G + B) / 3;
-    if ((B >= R && B >= G - 10 && bright > 90) || (bright > 170 && Math.abs(R - B) < 30)) skyish++;
-  }
-  return skyish / n > 0.6 && (r + g + b) / (3 * n) > 100;
-}
-
-$("photo").onchange = () => {
-  const file = $("photo").files[0];
-  if (file) checkPhoto(file);
+// Stopping early gives back the unused time.
+$("doneEarly").onclick = () => {
+  const end = Number(store.get(SESSION_KEY) || 0);
+  const unused = Math.max(0, end - Date.now());
+  store.set("doit-used-" + dayKey(), String(Math.max(0, usedMs() - unused)));
+  store.set(SESSION_KEY, "0");
+  resume();
 };
 
-async function checkPhoto(file) {
-  $("preview").src = URL.createObjectURL(file);
-  $("preview").hidden = false;
-  $("snap").hidden = true;
-  $("retry").hidden = true;
-  say("Checking your photo...", "");
-
-  let canvas;
-  try { canvas = await loadSmall(file); }
-  catch { return fail("That photo couldn't be read. Take a new one."); }
-
-  if (looksLikeSky(canvas)) return pass("That's the sky. Nice work getting outside.");
-
-  const model = await modelPromise;
-  if (!model) {
-    // The checker didn't load (no internet?), and the sky check didn't pass either.
-    return fail("I can't see the sky. Point the camera up at the sky and try again.");
-  }
-  let found = [];
-  try { found = await model.detect(canvas, 10, 0.4); } catch {}
-  const hit = found.find((p) => OUTDOOR_THINGS.includes(p.class));
-  if (hit) pass("I see a " + hit.class + " outside. That counts.");
-  else fail("That doesn't look like outside. Go out and point the camera at the sky.");
-}
-
-function fail(msg) {
-  say(msg, "fail");
-  $("retry").hidden = false;
-}
-
-function pass(msg) {
-  say(msg, "pass");
-  setTimeout(openVideo, 900);
-}
-
-// Step 3, the break. Its end time is saved, so opening DO IT again during the
-// break just shows the time left. Once it runs out, DO IT resets to step 1.
-function startBreak() {
-  const end = Date.now() + Number($("minutes").value) * 60000;
-  store.set(BREAK_KEY, String(end));
-  showBreak(end);
-  // Tell the Mac or Android app to let the blocked apps open during the break.
-  if (DEVICE_APP) location.href = "doit://break?minutes=" + encodeURIComponent($("minutes").value);
-}
-
-function showBreak(end) {
-  $("ask").hidden = true;
-  $("earned").hidden = false;
+function showRunning(end) {
+  $("go").hidden = true;
+  $("locked").hidden = true;
+  $("running").hidden = false;
+  $("doneEarly").hidden = false;
   const clock = $("clock");
   clock.classList.remove("up");
-  $("breakNote").textContent = "Go back to your app now. When the timer hits zero, your break is over, and the next time you open the app you start again from step 1.";
+  const after = leftMs();
+  $("runNote").textContent = "Go back to your app now. When the timer hits zero, it locks again. " +
+    (after > 0 ? "After this you'll have " + fmtMin(after) + " left today." : "This is your last time today.");
   const tick = () => {
     const left = Math.max(0, end - Date.now());
     const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
     clock.textContent = m + ":" + String(s).padStart(2, "0");
     if (left === 0) {
       clearInterval(timerId);
-      store.set(BREAK_KEY, "0");
+      store.set(SESSION_KEY, "0");
       clock.textContent = "Time's up";
       clock.classList.add("up");
-      $("breakNote").textContent = "Put the phone down and get back to it. Next time you open the app, you start over from step 1.";
+      $("doneEarly").hidden = true;
+      $("runNote").textContent = leftMs() > 0
+        ? "Put the phone down and get back to it."
+        : "That was all your time for today. Your apps stay locked until tomorrow.";
     }
   };
   clearInterval(timerId);
@@ -474,23 +283,37 @@ function showBreak(end) {
   timerId = setInterval(tick, 1000);
 }
 
-function startOver() {
+function showLocked() {
   clearInterval(timerId);
-  $("earned").hidden = true;
-  $("ask").hidden = false;
-  reset();
+  $("go").hidden = true;
+  $("running").hidden = true;
+  $("locked").hidden = false;
+  const tick = () => {
+    const midnight = new Date(); midnight.setHours(24, 0, 0, 0);
+    const left = Math.max(0, midnight - Date.now());
+    const h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+    $("lockClock").textContent = h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    if (leftMs() > 0) showGo(); // a new day started
+  };
+  tick();
+  timerId = setInterval(tick, 1000);
 }
 
 // Decide what to show whenever DO IT is opened or brought back on screen.
 function resume() {
-  if (!$("videoPop").hidden) return; // mid-video: stay on the video
-  const end = Number(store.get(BREAK_KEY) || 0);
-  if (end > Date.now()) showBreak(end);
-  else if (!$("earned").hidden) startOver(); // break over: back to step 1
+  const end = Number(store.get(SESSION_KEY) || 0);
+  if (end > Date.now()) showRunning(end);
+  else if (leftMs() <= 0) showLocked();
+  else showGo();
 }
 resume();
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) resume(); });
+
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(ADDRESS); $("copy").textContent = "Copied"; }
+  catch { $("copy").textContent = "Press and hold the address above to copy it"; }
+};
 </script>
 </body>
 </html>

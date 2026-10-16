@@ -1,4 +1,4 @@
-// The "STOP." screen iPhone shows in place of a blocked app.
+// The "Time's up" screen iPhone shows in place of a blocked app.
 import ManagedSettings
 import ManagedSettingsUI
 import UIKit
@@ -14,13 +14,12 @@ class ShieldConfig: ShieldConfigurationDataSource {
             backgroundBlurStyle: .dark,
             backgroundColor: UIColor.black,
             icon: nil,
-            title: .init(text: "STOP.", color: .white),
+            title: .init(text: "TIME'S UP.", color: .white),
             subtitle: .init(
-                text: "Go outside, take a photo of the sky, and watch the video in DO IT. Then you get your break.",
+                text: "You used all your time on this today. It unlocks at midnight. Go DO IT.",
                 color: UIColor(white: 0.82, alpha: 1)),
-            primaryButtonLabel: .init(text: "DO IT", color: UIColor.black),
-            primaryButtonBackgroundColor: UIColor(red: 0, green: 0.82, blue: 0.42, alpha: 1),
-            secondaryButtonLabel: .init(text: "Never mind", color: .white)
+            primaryButtonLabel: .init(text: "OK", color: UIColor.black),
+            primaryButtonBackgroundColor: UIColor(red: 0, green: 0.82, blue: 0.42, alpha: 1)
         )
     }
 }

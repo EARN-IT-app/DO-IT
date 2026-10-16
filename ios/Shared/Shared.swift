@@ -11,25 +11,26 @@ let shared = UserDefaults(suiteName: appGroup) ?? .standard
 enum Blocker {
     static let store = ManagedSettingsStore()
 
+    static func load(_ key: String) -> FamilyActivitySelection? {
+        guard let data = shared.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(FamilyActivitySelection.self, from: data)
+    }
+
+    static func save(_ value: FamilyActivitySelection?, _ key: String) {
+        shared.set(value.flatMap { try? JSONEncoder().encode($0) }, forKey: key)
+    }
+
+    /// The apps being limited today.
     static var selection: FamilyActivitySelection {
-        get {
-            guard let data = shared.data(forKey: "selection"),
-                  let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) else {
-                return FamilyActivitySelection()
-            }
-            return saved
-        }
-        set { shared.set(try? JSONEncoder().encode(newValue), forKey: "selection") }
+        get { load("selection") ?? FamilyActivitySelection() }
+        set { save(newValue, "selection") }
     }
 
-    static var hasApps: Bool {
-        let s = selection
-        return !s.applicationTokens.isEmpty || !s.categoryTokens.isEmpty || !s.webDomainTokens.isEmpty
+    static func isEmpty(_ s: FamilyActivitySelection) -> Bool {
+        s.applicationTokens.isEmpty && s.categoryTokens.isEmpty && s.webDomainTokens.isEmpty
     }
 
-    /// Block the picked apps (does nothing during a break).
     static func shieldOn() {
-        guard !Break.active else { return }
         let s = selection
         store.shield.applications = s.applicationTokens.isEmpty ? nil : s.applicationTokens
         store.shield.applicationCategories = s.categoryTokens.isEmpty ? nil : .specific(s.categoryTokens)
@@ -42,42 +43,82 @@ enum Blocker {
 }
 
 extension DeviceActivityName {
-    static let doitBreak = Self("doit.break")
+    static let doitDay = Self("doit.day")
 }
 
-/// A break lifts the shield, and Screen Time puts it back when the break ends,
-/// even if DO IT is closed. Apple only allows timed windows of 15 minutes or more.
-enum Break {
-    static let minMinutes = 15
-    static let maxMinutes = 60
+extension DeviceActivityEvent.Name {
+    static let doitLimit = Self("doit.limit")
+}
 
-    static var endsAt: Date {
-        get { Date(timeIntervalSince1970: shared.double(forKey: "breakEnd")) }
-        set { shared.set(newValue.timeIntervalSince1970, forKey: "breakEnd") }
+/// The daily limit. Screen Time counts how long the picked apps are used each day,
+/// even when DO IT is closed. When the total reaches the limit, the apps are blocked
+/// until midnight. Changes to the apps or the limit only start the next day,
+/// so they can't be used to get back in today.
+enum Limit {
+    static let choices = [15, 30, 45, 60, 90, 120]
+
+    static var minutes: Int {
+        get { shared.integer(forKey: "limit") == 0 ? 30 : shared.integer(forKey: "limit") }
+        set { shared.set(newValue, forKey: "limit") }
     }
 
-    static var active: Bool { endsAt > Date() }
+    static var pendingMinutes: Int? {
+        get { shared.object(forKey: "pendingLimit") as? Int }
+        set { shared.set(newValue, forKey: "pendingLimit") }
+    }
 
-    static func start(minutes asked: Int) throws {
-        let minutes = min(max(asked, minMinutes), maxMinutes)
-        let now = Date()
-        let end = now.addingTimeInterval(Double(minutes) * 60)
-        let parts: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+    static var pendingSelection: FamilyActivitySelection? {
+        get { Blocker.load("pendingSelection") }
+        set { Blocker.save(newValue, "pendingSelection") }
+    }
+
+    static var hasPending: Bool { pendingMinutes != nil || pendingSelection != nil }
+
+    static func dayKey(_ date: Date = Date()) -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return "\(c.year!)-\(c.month!)-\(c.day!)"
+    }
+
+    /// Whether today's time is used up.
+    static var lockedToday: Bool { shared.string(forKey: "lockedDay") == dayKey() }
+
+    /// Called when the limit is reached.
+    static func lock() {
+        shared.set(dayKey(), forKey: "lockedDay")
+        Blocker.shieldOn()
+    }
+
+    /// Called at the start of each day: unlock, apply any changes, and start counting again.
+    static func newDay() {
+        shared.set(nil, forKey: "lockedDay")
+        Blocker.shieldOff()
+        if let m = pendingMinutes { minutes = m; pendingMinutes = nil }
+        if let s = pendingSelection { Blocker.selection = s; pendingSelection = nil }
+        shared.set(dayKey(), forKey: "countingDay")
+        try? startCounting()
+    }
+
+    static func startCounting() throws {
+        let s = Blocker.selection
+        let event = DeviceActivityEvent(
+            applications: s.applicationTokens,
+            categories: s.categoryTokens,
+            webDomains: s.webDomainTokens,
+            threshold: DateComponents(minute: minutes)
+        )
         let schedule = DeviceActivitySchedule(
-            intervalStart: Calendar.current.dateComponents(parts, from: now),
-            intervalEnd: Calendar.current.dateComponents(parts, from: end),
-            repeats: false
+            intervalStart: DateComponents(hour: 0, minute: 0, second: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59, second: 59),
+            repeats: true
         )
         let center = DeviceActivityCenter()
-        center.stopMonitoring([.doitBreak])
-        try center.startMonitoring(.doitBreak, during: schedule)
-        endsAt = end
-        Blocker.shieldOff()
+        center.stopMonitoring([.doitDay])
+        try center.startMonitoring(.doitDay, during: schedule, events: [.doitLimit: event])
     }
 
-    /// Called when the break window ends (by the Monitor extension, or by the app as a backup).
-    static func end() {
-        endsAt = .distantPast
-        Blocker.shieldOn()
+    /// Backup for when the app opens on a new day before Screen Time caught up.
+    static func checkDay() {
+        if shared.string(forKey: "countingDay") != dayKey() { newDay() }
+        else if lockedToday { Blocker.shieldOn() }
     }
 }

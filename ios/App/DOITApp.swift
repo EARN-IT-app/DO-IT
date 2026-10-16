@@ -1,11 +1,8 @@
-// DO IT for iPhone. Setup asks for Screen Time access and the apps to block.
-// After that the app shows the DO IT website (outdoor photo, then the video).
-// Finishing it opens doit://break?minutes=N, which lifts the block for the break.
+// DO IT for iPhone. Setup asks for Screen Time access, the apps to limit,
+// and how much time they get each day. Screen Time then counts the time, and
+// once the day's limit is used up the apps stay blocked until midnight.
 import SwiftUI
 import FamilyControls
-import UserNotifications
-
-let siteURL = URL(string: "https://wonderbread4912.github.io/DO-IT/?from=ios")!
 
 @main
 struct DOITApp: App {
@@ -17,24 +14,19 @@ struct DOITApp: App {
 struct RootView: View {
     @Environment(\.scenePhase) private var phase
     @AppStorage("setUpDone") private var setUpDone = false
-    @State private var onBreak = Break.active
+    @State private var changing = false
 
     var body: some View {
         Group {
             if !setUpDone {
                 SetupView { setUpDone = true }
-            } else if onBreak {
-                BreakView { onBreak = false }
             } else {
-                ChallengeView(onBreakStarted: { onBreak = true })
+                TodayView(change: { changing = true })
             }
         }
+        .sheet(isPresented: $changing) { ChangeView() }
         .onChange(of: phase) { now in
-            guard now == .active else { return }
-            // Backup in case the break ended while the phone was busy.
-            if !Break.active && shared.double(forKey: "breakEnd") > 0 { Break.end() }
-            onBreak = Break.active
-            if !onBreak { Blocker.shieldOn() }
+            if now == .active && setUpDone { Limit.checkDay() }
         }
     }
 }
@@ -46,17 +38,14 @@ struct SetupView: View {
     @State private var allowed = AuthorizationCenter.shared.authorizationStatus == .approved
     @State private var picking = false
     @State private var selection = Blocker.selection
+    @State private var minutes = Limit.minutes
     @State private var problem: String?
-
-    private var hasApps: Bool {
-        !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty || !selection.webDomainTokens.isEmpty
-    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Text("DO IT").font(.system(size: 56, weight: .black))
-                Text("Pick the apps that waste your time. When you open one, DO IT stops you until you go outside, take a photo of the sky, and watch the video.")
+                Text("Pick the apps that waste your time and how long you can use them each day. Once the time is used up, they stay locked until tomorrow.")
                     .foregroundColor(.secondary)
 
                 Step(number: 1, title: "Let DO IT use Screen Time",
@@ -66,35 +55,44 @@ struct SetupView: View {
                         do {
                             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
                             allowed = AuthorizationCenter.shared.authorizationStatus == .approved
-                            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
                         } catch {
                             problem = "Screen Time access wasn't turned on. Tap the button to try again."
                         }
                     }
                 }
 
-                Step(number: 2, title: "Pick the apps to block",
+                Step(number: 2, title: "Pick the apps to limit",
                      detail: "Choose apps like TikTok or Instagram, or a whole group like Social.",
-                     done: hasApps, button: hasApps ? "Change apps" : "Pick apps") {
+                     done: !Blocker.isEmpty(selection),
+                     button: Blocker.isEmpty(selection) ? "Pick apps" : "Change apps") {
                     picking = true
                 }
                 .disabled(!allowed)
 
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("3. Time allowed each day").font(.title3.bold())
+                    Text("That's the total for all the apps you picked.").foregroundColor(.secondary)
+                    LimitPicker(minutes: $minutes)
+                }
+
                 if let problem { Text(problem).foregroundColor(.red) }
 
-                Button(action: finished) {
-                    Text("Start blocking").bold().frame(maxWidth: .infinity, minHeight: 56)
+                Button {
+                    Blocker.selection = selection
+                    Limit.minutes = minutes
+                    Limit.pendingMinutes = nil
+                    Limit.pendingSelection = nil
+                    Limit.newDay()
+                    finished()
+                } label: {
+                    Text("Start").bold().frame(maxWidth: .infinity, minHeight: 56)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(!allowed || !hasApps)
+                .disabled(!allowed || Blocker.isEmpty(selection))
             }
             .padding(24)
         }
         .familyActivityPicker(isPresented: $picking, selection: $selection)
-        .onChange(of: selection) { picked in
-            Blocker.selection = picked
-            Blocker.shieldOn()
-        }
     }
 }
 
@@ -123,61 +121,100 @@ struct Step: View {
     }
 }
 
-// MARK: - Challenge (the DO IT website inside the app)
-
-struct ChallengeView: View {
-    var onBreakStarted: () -> Void
-    @State private var problem: String?
-    @AppStorage("setUpDone") private var setUpDone = true
+struct LimitPicker: View {
+    @Binding var minutes: Int
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            WebView(url: siteURL) { minutes in
-                do {
-                    try Break.start(minutes: minutes)
-                    onBreakStarted()
-                } catch {
-                    problem = "Your break couldn't start. Try again in a moment."
-                }
+        Picker("Time each day", selection: $minutes) {
+            ForEach(Limit.choices, id: \.self) { m in
+                Text(label(m)).tag(m)
             }
-            .ignoresSafeArea(edges: .bottom)
+        }
+        .pickerStyle(.menu)
+        .frame(maxWidth: .infinity, minHeight: 50)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
+    }
 
-            Button { setUpDone = false } label: {
-                Image(systemName: "gearshape.fill").font(.title2).padding(12)
-            }
-            .accessibilityLabel("Change blocked apps")
-        }
-        .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
-            Button("OK", role: .cancel) {}
-        }
+    private func label(_ m: Int) -> String {
+        m < 60 ? "\(m) minutes" : (m % 60 == 0 ? "\(m / 60) hour\(m == 60 ? "" : "s")" : "\(m / 60) hour \(m % 60) minutes")
     }
 }
 
-// MARK: - Break
+// MARK: - Today
 
-struct BreakView: View {
-    var ended: () -> Void
+struct TodayView: View {
+    var change: () -> Void
     @State private var now = Date()
     private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        let left = max(0, Int(Break.endsAt.timeIntervalSince(now)))
+        let locked = Limit.lockedToday
         VStack(spacing: 20) {
-            Text("YOUR BREAK").font(.caption.bold()).foregroundColor(.green)
-            Text(String(format: "%d:%02d", left / 60, left % 60))
-                .font(.system(size: 72, weight: .black).monospacedDigit())
-                .foregroundColor(.green)
-            Text("Your apps are open. When the timer hits zero they lock again, and you start over from step 1.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+            Spacer()
+            Text("DO IT").font(.system(size: 56, weight: .black))
+            Text(locked ? "DONE FOR TODAY" : "TIME ALLOWED TODAY")
+                .font(.caption.bold()).foregroundColor(locked ? .red : .green)
+            if locked {
+                let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
+                let left = max(0, Int(midnight.timeIntervalSince(now)))
+                Text(String(format: "%d:%02d:%02d", left / 3600, left % 3600 / 60, left % 60))
+                    .font(.system(size: 64, weight: .black).monospacedDigit())
+                    .foregroundColor(.red)
+                Text("You used all your time. Your apps unlock at midnight. Go do the thing you've been putting off.")
+                    .multilineTextAlignment(.center).foregroundColor(.secondary)
+            } else {
+                Text("\(Limit.minutes) min")
+                    .font(.system(size: 64, weight: .black))
+                    .foregroundColor(.green)
+                Text("Your apps are open. Once you've used them for \(Limit.minutes) minutes today, they lock until midnight.")
+                    .multilineTextAlignment(.center).foregroundColor(.secondary)
+            }
+            if Limit.hasPending {
+                Text("Your changes start tomorrow.").font(.footnote).foregroundColor(.secondary)
+            }
+            Spacer()
+            Button(action: change) {
+                Text("Change apps or time").bold().frame(maxWidth: .infinity, minHeight: 50)
+            }
+            .buttonStyle(.bordered)
         }
         .padding(32)
-        .onReceive(tick) { date in
-            now = date
-            if !Break.active {
-                Break.end()
-                ended()
+        .onReceive(tick) { now = $0 }
+    }
+}
+
+// MARK: - Change (takes effect tomorrow)
+
+struct ChangeView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var picking = false
+    @State private var selection = Limit.pendingSelection ?? Blocker.selection
+    @State private var minutes = Limit.pendingMinutes ?? Limit.minutes
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Change DO IT").font(.title.bold())
+            Text("Changes start tomorrow, so they can't be used to get more time today.")
+                .foregroundColor(.secondary)
+            Button { picking = true } label: {
+                Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
             }
+            .buttonStyle(.bordered)
+            Text("Time allowed each day").font(.headline)
+            LimitPicker(minutes: $minutes)
+            Spacer()
+            Button {
+                Limit.pendingSelection = selection
+                Limit.pendingMinutes = minutes
+                dismiss()
+            } label: {
+                Text("Save for tomorrow").bold().frame(maxWidth: .infinity, minHeight: 56)
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(Blocker.isEmpty(selection))
+            Button("Cancel") { dismiss() }.frame(maxWidth: .infinity)
         }
+        .padding(24)
+        .familyActivityPicker(isPresented: $picking, selection: $selection)
     }
 }
