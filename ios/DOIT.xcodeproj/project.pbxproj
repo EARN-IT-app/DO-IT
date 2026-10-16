@@ -11,6 +11,7 @@
 		08D580EFECE2F2E53B8C60D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */; };
 		0902809BF87A0BB4A1DCB1E4 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 		1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+		1EA1870DF6C6FFB54693E277 /* AlarmVideoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438351FEB20401C6A490D78E /* AlarmVideoTests.swift */; };
 		33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441780F300B64F621B420563 /* MirrorPhoto.swift */; };
 		40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */; };
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
@@ -31,6 +32,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4211ECDDA88683198A255199;
 			remoteInfo = DOITMonitor;
+		};
+		961D0705319953B00529DC03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74C6892DE6F00E1E65E7BAEE;
+			remoteInfo = DOIT;
 		};
 		D67B032D741D655D6158705C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -67,6 +75,7 @@
 /* Begin PBXFileReference section */
 		0EEC29C62787995A5582E2BA /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 		0F7DBD5A7A6CBD177448BC99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		438351FEB20401C6A490D78E /* AlarmVideoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmVideoTests.swift; sourceTree = "<group>"; };
 		43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		441780F300B64F621B420563 /* MirrorPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorPhoto.swift; sourceTree = "<group>"; };
 		4EECED60B7F91B1E8DB6207B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -77,6 +86,7 @@
 		90C119AD25F84932407884E1 /* ShieldAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShieldAction.entitlements; sourceTree = "<group>"; };
 		90F031732A6B5AFC79AE860B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfig.swift; sourceTree = "<group>"; };
+		9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DOITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6462981646F5292DD39FA26 /* DOIT.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DOIT.entitlements; sourceTree = "<group>"; };
 		AB0EC15108FA45C51BF7EDE1 /* DOIT.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DOIT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -113,6 +123,14 @@
 			path = Shield;
 			sourceTree = "<group>";
 		};
+		2C67385F82A4EE1775576BB7 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				438351FEB20401C6A490D78E /* AlarmVideoTests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		3881AEFB7B98AC10474F678F /* Monitor */ = {
 			isa = PBXGroup;
 			children = (
@@ -131,6 +149,7 @@
 				DCC4CCAB7644942E3C6E2B87 /* Shared */,
 				1735310387F9C4C43CD0FF02 /* Shield */,
 				FA75FA9681F0013F1AEDF33E /* ShieldAction */,
+				2C67385F82A4EE1775576BB7 /* UITests */,
 				DB74958A0B9D0620E116DB9A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -142,6 +161,7 @@
 				43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */,
 				7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */,
 				ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */,
+				9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -183,6 +203,24 @@
 			productName = DOITShield;
 			productReference = 7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		34E97FAE76EDFFE0F78A8F97 /* DOITUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA84DEED98FA5EA547AE3096 /* Build configuration list for PBXNativeTarget "DOITUITests" */;
+			buildPhases = (
+				1F6D11CC3D25A73440933335 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				99F05EF0A8102560BF5D720D /* PBXTargetDependency */,
+			);
+			name = DOITUITests;
+			packageProductDependencies = (
+			);
+			productName = DOITUITests;
+			productReference = 9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		4211ECDDA88683198A255199 /* DOITMonitor */ = {
 			isa = PBXNativeTarget;
@@ -252,6 +290,10 @@
 					3248189485E852BBCBD13B1E = {
 						ProvisioningStyle = Automatic;
 					};
+					34E97FAE76EDFFE0F78A8F97 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = 74C6892DE6F00E1E65E7BAEE;
+					};
 					4211ECDDA88683198A255199 = {
 						ProvisioningStyle = Automatic;
 					};
@@ -281,6 +323,7 @@
 				4211ECDDA88683198A255199 /* DOITMonitor */,
 				3248189485E852BBCBD13B1E /* DOITShield */,
 				E4551F5B7AD627B36369B9F3 /* DOITShieldAction */,
+				34E97FAE76EDFFE0F78A8F97 /* DOITUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -306,6 +349,14 @@
 				33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */,
 				40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */,
 				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1F6D11CC3D25A73440933335 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1EA1870DF6C6FFB54693E277 /* AlarmVideoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +394,11 @@
 			isa = PBXTargetDependency;
 			target = E4551F5B7AD627B36369B9F3 /* DOITShieldAction */;
 			targetProxy = E9A8A1583BC97C8F68CB747F /* PBXContainerItemProxy */;
+		};
+		99F05EF0A8102560BF5D720D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74C6892DE6F00E1E65E7BAEE /* DOIT */;
+			targetProxy = 961D0705319953B00529DC03 /* PBXContainerItemProxy */;
 		};
 		A730842781E0FCE60BCA1374 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -414,6 +470,23 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		3DCB72119CAE0D502627C10B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.DOITUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DOIT;
 			};
 			name = Release;
 		};
@@ -514,6 +587,23 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		6F9E0CAC822B409EFFFBA262 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.DOITUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DOIT;
 			};
 			name = Debug;
 		};
@@ -631,6 +721,15 @@
 			buildConfigurations = (
 				D728A7423E02CD7EEAB9F789 /* Debug */,
 				A73EC41D89ACD4F1377D03BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BA84DEED98FA5EA547AE3096 /* Build configuration list for PBXNativeTarget "DOITUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6F9E0CAC822B409EFFFBA262 /* Debug */,
+				3DCB72119CAE0D502627C10B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
