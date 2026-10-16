@@ -41,11 +41,15 @@ struct RootView: View {
     @State private var changing = false
     @State private var ringing = MorningAlarm.ringing
     @State private var homework = Homework.on
+    // Shown each time DO IT opens after the day's time is used up.
+    @State private var stop = Limit.lockedToday || CommandLine.arguments.contains("-demoStop")
 
     var body: some View {
         Group {
             if ringing {
                 AlarmView { ringing = false }
+            } else if stop && setUpDone {
+                StopView { stop = false }
             } else if !setUpDone {
                 SetupView { setUpDone = true }
             } else if homework {
@@ -64,6 +68,7 @@ struct RootView: View {
             ringing = MorningAlarm.ringing
             homework = Homework.on
             if setUpDone { Limit.checkDay() }
+            stop = Limit.lockedToday
             if !CommandLine.arguments.contains("-demo") {
                 Task { await MorningAlarm.reschedule() } // top up the next few days
             }
