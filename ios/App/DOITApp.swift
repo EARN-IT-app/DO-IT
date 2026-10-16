@@ -190,59 +190,49 @@ struct TodayView: View {
     var change: () -> Void
     @State private var goal = Goal.text(Goal.tomorrow)
     @State private var stretching = false
-    @State private var settings = false
-    @State private var changeAfterSettings = false
     @AppStorage("name", store: shared) private var name = ""
     @AppStorage("layout-order", store: shared) private var layoutOrder = ""
     @AppStorage("layout-hidden", store: shared) private var layoutHidden = ""
-    @AppStorage("layout-chips", store: shared) private var layoutChips = true
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
     @State private var bedtime = Bedtime.on
     @State private var alarmOn = MorningAlarm.on
     @State private var alarmTime = MorningAlarm.time
+    // "-demoTab Week" opens on another tab, for the screenshots GitHub takes.
+    @State private var tab = UserDefaults.standard.string(forKey: "demoTab") ?? "Today"
     private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         let _ = now // redraw every second
-        ScrollViewReader { scroll in
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+        TabView(selection: $tab) {
+            page {
                 header
-
                 todayCard
-                // Shortcuts under the ring: each jumps to its settings below.
-                if layoutChips {
-                    HStack(spacing: 10) {
-                        if shown.contains("focus") {
-                            chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
-                        }
-                        if shown.contains("bedtime") {
-                            chip("moon.fill", "Bedtime", bedtime ? "10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
-                        }
-                        if shown.contains("alarm") {
-                            chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
-                        }
-                        chip("figure.flexibility", "Stretch", "Morning") { stretching = true }
-                    }
-                }
-                // The cards, in the order the person picked in Settings > Home screen.
-                ForEach(shown, id: \.self) { homeCard($0).id($0) }
-
-                Button(action: change) {
-                    Label("Change apps", systemImage: "square.grid.2x2.fill")
-                }
-                .buttonStyle(SoftButton())
-                if Limit.hasPending {
-                    Text("Your app changes start tomorrow.").font(.footnote).foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                }
+                cards(in: Layout.todayTab)
             }
-            .padding(20)
+            .tabItem { Label("Today", systemImage: "clock.fill") }
+            .tag("Today")
+
+            page {
+                title("Focus")
+                cards(in: Layout.focusTab)
+            }
+            .tabItem { Label("Focus", systemImage: "lock.fill") }
+            .tag("Focus")
+
+            page {
+                title("This week")
+                cards(in: Layout.weekTab)
+            }
+            .tabItem { Label("Week", systemImage: "chart.bar.fill") }
+            .tag("Week")
+
+            SettingsView(change: change, stretch: { stretching = true }, inTab: true)
+                .tabItem { Label("Me", systemImage: "person.fill") }
+                .tag("Me")
         }
-        }
-        .background(GlowBackground(color: Limit.lockedToday ? doitRed : doitGreen))
+        .tint(doitGreen)
         .onReceive(tick) { now = $0 }
         .alert("Focus for \(askFocus ?? 0) minutes?", isPresented: Binding(get: { askFocus != nil }, set: { if !$0 { askFocus = nil } })) {
             Button("Lock my apps") {
@@ -255,13 +245,34 @@ struct TodayView: View {
             Text("Your apps lock right now. There's no way to cancel until the time is up.")
         }
         .sheet(isPresented: $stretching) { StretchView() }
-        // Open the app picker only after Settings has closed, or iPhone won't show it.
-        .sheet(isPresented: $settings, onDismiss: {
-            if changeAfterSettings { changeAfterSettings = false; change() }
-        }) { SettingsView(change: { changeAfterSettings = true; settings = false }) }
         .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
             Button("OK", role: .cancel) {}
         }
+    }
+
+    /// One tab's screen: a scrolling column on the glowing background.
+    private func page<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) { content() }
+                .padding(20)
+        }
+        .background(GlowBackground(color: Limit.lockedToday ? doitRed : doitGreen))
+        .toolbarBackground(.visible, for: .tabBar)
+        .toolbarBackground(Color(white: 0.05), for: .tabBar)
+    }
+
+    private func title(_ text: String) -> some View {
+        Text(text).font(.system(size: 34, weight: .black)).padding(.top, 8)
+    }
+
+    /// The cards for one tab, in the order the person picked in Me > Home screen layout.
+    @ViewBuilder private func cards(in tab: [String]) -> some View {
+        let list = shown.filter(tab.contains)
+        if list.isEmpty {
+            Text("All the cards on this tab are hidden. You can show them again in Me, under Home screen layout.")
+                .foregroundColor(.secondary)
+        }
+        ForEach(list, id: \.self) { homeCard($0) }
     }
 
     private var shown: [String] { Layout.shown(order: layoutOrder, hidden: layoutHidden) }
@@ -288,11 +299,6 @@ struct TodayView: View {
                 .shadow(color: doitGreen.opacity(0.4), radius: 10)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(Limit.streak) day streak")
-                Button { settings = true } label: {
-                    Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.white)
-                        .frame(width: 40, height: 40).background(Color.white.opacity(0.1)).clipShape(Circle())
-                }
-                .accessibilityLabel("Settings")
             }
             Text(greeting).font(.title3.weight(.semibold)).foregroundColor(.secondary)
         }
@@ -380,22 +386,6 @@ struct TodayView: View {
         }
     }
 
-    private func chip(_ icon: String, _ title: String, _ detail: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon).font(.system(size: 20, weight: .bold)).foregroundColor(doitGreen)
-                    .frame(height: 24)
-                Text(title).font(.subheadline.weight(.bold)).foregroundColor(.white)
-                Text(detail).font(.caption).foregroundColor(.secondary).lineLimit(1).minimumScaleFactor(0.7)
-            }
-            .frame(maxWidth: .infinity).padding(.vertical, 14)
-            .background(Color.white.opacity(0.07))
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Color.white.opacity(0.09)))
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-
     @ViewBuilder private var todayCard: some View {
         if !Limit.lockedToday {
             // One big glowing ring for the time left today.
@@ -409,7 +399,7 @@ struct TodayView: View {
                     Divider().frame(height: 30).overlay(Color.white.opacity(0.15))
                     Stat(value: "\(Limit.minutes)m", label: "Daily limit")
                     Divider().frame(height: 30).overlay(Color.white.opacity(0.15))
-                    Stat(value: "\(Limit.streak)", label: Limit.streak == 1 ? "Day streak" : "Days streak")
+                    Stat(value: alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off", label: "Alarm")
                 }
                 .padding(.vertical, 14)
                 .background(Color.white.opacity(0.06))

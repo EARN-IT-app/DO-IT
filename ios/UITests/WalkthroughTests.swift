@@ -1,5 +1,5 @@
 // Drives the test iPhone through the app while GitHub records the screen:
-// the setup screen, the home screen, Settings, stretches and the alarm.
+// the setup screen, each tab, stretches and the alarm.
 import XCTest
 
 final class WalkthroughTests: XCTestCase {
@@ -18,16 +18,18 @@ final class WalkthroughTests: XCTestCase {
         for _ in 0..<8 { app.swipeDown(velocity: .fast) }
         sleep(2)
 
-        tap(app.buttons["Settings"])
-        sleep(4)
-        tap(app.buttons["Done"])
-        sleep(2)
-
+        // Visit each tab, then open stretches from the Me tab.
+        for tab in ["Focus", "Week", "Me"] {
+            tap(app.tabBars.buttons[tab])
+            sleep(3)
+        }
         tap(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Stretch")).firstMatch)
         sleep(3)
         tap(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Start stretching")).firstMatch)
         sleep(6)
         tap(app.buttons["Close"])
+        sleep(2)
+        tap(app.tabBars.buttons["Today"])
         sleep(2)
         app.terminate()
 

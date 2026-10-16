@@ -4,6 +4,9 @@ import SwiftUI
 
 struct SettingsView: View {
     var change: () -> Void
+    var stretch: () -> Void = {}
+    /// true when shown as the Me tab instead of a sheet, so there's no Done button.
+    var inTab = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @AppStorage("name", store: shared) private var name = ""
@@ -12,6 +15,21 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if inTab {
+                    Section {
+                        HStack(spacing: 14) {
+                            Text(String((name.isEmpty ? "Me" : name).prefix(1)).uppercased())
+                                .font(.system(size: 22, weight: .black)).foregroundColor(.black)
+                                .frame(width: 54, height: 54).background(doitGreen).clipShape(Circle())
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(name.isEmpty ? "You" : name).font(.title3.bold())
+                                Text("\(Limit.streak) day streak").foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                        Button(action: stretch) { Label("Morning stretches", systemImage: "figure.flexibility") }
+                    }
+                }
                 Section("General") {
                     TextField("Your name", text: $name)
                     Toggle("Motivational quotes on the lock screen", isOn: $quotes)
@@ -24,7 +42,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Home screen")
                 } footer: {
-                    Text("Pick which cards you see and drag them into the order you like.")
+                    Text("Pick which cards you see and drag them into the order you like. Each card stays on its own tab.")
                 }
                 Section {
                     Button("Change the apps I block", action: change)
@@ -43,8 +61,10 @@ struct SettingsView: View {
                         .font(.footnote).foregroundColor(.secondary)
                 } header: { Text("About") }
             }
-            .navigationTitle("Settings")
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .scrollContentBackground(.hidden)
+            .background(GlowBackground())
+            .navigationTitle(inTab ? "Me" : "Settings")
+            .toolbar { ToolbarItem(placement: .confirmationAction) { if !inTab { Button("Done") { dismiss() } } } }
         }
         .tint(doitGreen)
         .preferredColorScheme(.dark)
@@ -55,13 +75,9 @@ struct SettingsView: View {
 struct LayoutView: View {
     @AppStorage("layout-order", store: shared) private var layoutOrder = ""
     @AppStorage("layout-hidden", store: shared) private var layoutHidden = ""
-    @AppStorage("layout-chips", store: shared) private var layoutChips = true
 
     var body: some View {
         List {
-            Section {
-                Toggle("Shortcut buttons under the ring", isOn: $layoutChips)
-            }
             Section {
                 ForEach(Layout.order(layoutOrder), id: \.self) { id in
                     Toggle(Layout.name(id), isOn: Binding(
@@ -83,7 +99,7 @@ struct LayoutView: View {
                 Text("Hold the ≡ handle and drag a card up or down. Hiding a card doesn't turn it off. Your alarm and locks still work.")
             }
             Section {
-                Button("Reset the layout") { layoutOrder = ""; layoutHidden = ""; layoutChips = true }
+                Button("Reset the layout") { layoutOrder = ""; layoutHidden = "" }
             }
         }
         // Always show the drag handles, so there's no Edit button to find first.
@@ -96,6 +112,10 @@ struct LayoutView: View {
 // Which cards the home screen shows, and in what order. Saved as comma lists.
 enum Layout {
     static let all = ["focus", "goal", "opens", "week", "bedtime", "alarm"]
+    // Which tab each card lives on.
+    static let todayTab = ["goal"]
+    static let focusTab = ["focus", "bedtime", "alarm"]
+    static let weekTab = ["week", "opens"]
 
     static func list(_ saved: String) -> [String] { saved.split(separator: ",").map(String.init) }
 
