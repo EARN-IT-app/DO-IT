@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Process
 import android.provider.Settings
 
-const val SITE_URL = "https://wonderbread4912.github.io/DO-IT/?from=android"
+const val SITE_URL = "https://earn-it-app.github.io/DO-IT/?from=android"
 const val MAX_BREAK_MINUTES = 60
 
 /** The apps to block and the current break, saved on the phone. */

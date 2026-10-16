@@ -5,7 +5,7 @@ import SwiftUI
 import WebKit
 import AVFoundation
 
-let alarmVideoURL = URL(string: "https://wonderbread4912.github.io/DO-IT/alarm-video.html")!
+let alarmVideoURL = URL(string: "https://earn-it-app.github.io/DO-IT/alarm-video.html")!
 
 struct AlarmVideo: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
