@@ -1,5 +1,5 @@
-// DO IT for iPhone. Setup asks for Screen Time access, the apps to limit,
-// and how much time they get each day. Screen Time then counts the time, and
+// DO IT for iPhone. Setup asks for Screen Time access and the apps to limit.
+// They get a fixed 30 minutes a day. Screen Time then counts the time, and
 // once the day's limit is used up the apps stay blocked until midnight.
 import SwiftUI
 import FamilyControls
@@ -39,14 +39,13 @@ struct SetupView: View {
     @State private var allowed = AuthorizationCenter.shared.authorizationStatus == .approved
     @State private var picking = false
     @State private var selection = Blocker.selection
-    @State private var minutes = Limit.minutes
     @State private var problem: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Text("DO IT").font(.system(size: 56, weight: .black))
-                Text("Pick the apps that waste your time and how long you can use them each day. Once the time is used up, they stay locked until tomorrow.")
+                Text("Pick the apps that waste your time. You get \(Limit.minutes) minutes a day on them. Once that's used up, they stay locked until tomorrow.")
                     .foregroundColor(.secondary)
 
                 Step(number: 1, title: "Let DO IT use Screen Time",
@@ -73,18 +72,10 @@ struct SetupView: View {
                 }
                 .disabled(!allowed)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("3. Time allowed each day").font(.title3.bold())
-                    Text("That's the total for all the apps you picked.").foregroundColor(.secondary)
-                    LimitPicker(minutes: $minutes)
-                }
-
                 if let problem { Text(problem).foregroundColor(.red) }
 
                 Button {
                     Blocker.selection = selection
-                    Limit.minutes = minutes
-                    Limit.pendingMinutes = nil
                     Limit.pendingSelection = nil
                     Limit.newDay()
                     finished()
@@ -125,25 +116,6 @@ struct Step: View {
     }
 }
 
-struct LimitPicker: View {
-    @Binding var minutes: Int
-
-    var body: some View {
-        Picker("Time each day", selection: $minutes) {
-            ForEach(Limit.choices, id: \.self) { m in
-                Text(label(m)).tag(m)
-            }
-        }
-        .pickerStyle(.menu)
-        .frame(maxWidth: .infinity, minHeight: 50)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.3)))
-    }
-
-    private func label(_ m: Int) -> String {
-        m < 60 ? "\(m) minutes" : (m % 60 == 0 ? "\(m / 60) hour\(m == 60 ? "" : "s")" : "\(m / 60) hour \(m % 60) minutes")
-    }
-}
-
 // MARK: - Today
 
 struct TodayView: View {
@@ -178,7 +150,7 @@ struct TodayView: View {
             }
             Spacer()
             Button(action: change) {
-                Text("Change apps or time").bold().frame(maxWidth: .infinity, minHeight: 50)
+                Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
             }
             .buttonStyle(.bordered)
         }
@@ -193,23 +165,19 @@ struct ChangeView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var picking = false
     @State private var selection = Limit.pendingSelection ?? Blocker.selection
-    @State private var minutes = Limit.pendingMinutes ?? Limit.minutes
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Change DO IT").font(.title.bold())
+            Text("Change apps").font(.title.bold())
             Text("Changes start tomorrow, so they can't be used to get more time today.")
                 .foregroundColor(.secondary)
             Button { picking = true } label: {
                 Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
             }
             .buttonStyle(.bordered)
-            Text("Time allowed each day").font(.headline)
-            LimitPicker(minutes: $minutes)
             Spacer()
             Button {
                 Limit.pendingSelection = selection
-                Limit.pendingMinutes = minutes
                 dismiss()
             } label: {
                 Text("Save for tomorrow").bold().frame(maxWidth: .infinity, minHeight: 56)

@@ -53,27 +53,17 @@ extension DeviceActivityEvent.Name {
 
 /// The daily limit. Screen Time counts how long the picked apps are used each day,
 /// even when DO IT is closed. When the total reaches the limit, the apps are blocked
-/// until midnight. Changes to the apps or the limit only start the next day,
-/// so they can't be used to get back in today.
+/// until midnight. The limit is fixed, and changes to the apps only start the next
+/// day, so neither can be used to get back in today.
 enum Limit {
-    static let choices = [15, 30, 45, 60, 90, 120]
-
-    static var minutes: Int {
-        get { shared.integer(forKey: "limit") == 0 ? 30 : shared.integer(forKey: "limit") }
-        set { shared.set(newValue, forKey: "limit") }
-    }
-
-    static var pendingMinutes: Int? {
-        get { shared.object(forKey: "pendingLimit") as? Int }
-        set { shared.set(newValue, forKey: "pendingLimit") }
-    }
+    static let minutes = 30
 
     static var pendingSelection: FamilyActivitySelection? {
         get { Blocker.load("pendingSelection") }
         set { Blocker.save(newValue, "pendingSelection") }
     }
 
-    static var hasPending: Bool { pendingMinutes != nil || pendingSelection != nil }
+    static var hasPending: Bool { pendingSelection != nil }
 
     static func dayKey(_ date: Date = Date()) -> String {
         let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
@@ -106,7 +96,6 @@ enum Limit {
     static func newDay() {
         shared.set(nil, forKey: "lockedDay")
         Blocker.shieldOff()
-        if let m = pendingMinutes { minutes = m; pendingMinutes = nil }
         if let s = pendingSelection { Blocker.selection = s; pendingSelection = nil }
         shared.set(dayKey(), forKey: "countingDay")
         try? startCounting()

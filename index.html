@@ -110,7 +110,7 @@ select {
 <body>
 <main>
   <h1><span>DO</span><br><span>IT</span></h1>
-  <p class="lede">You only get so much time on your apps each day. When today's time is used up, they stay locked until tomorrow.</p>
+  <p class="lede">You get 30 minutes a day on your apps, and that can't be changed. When today's time is used up, they stay locked until tomorrow.</p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -140,19 +140,6 @@ select {
     <p class="task">You used all your time. Your apps are locked until tomorrow.</p>
     <p class="timer up" id="lockClock">0:00:00</p>
     <p class="note">That's how long until they unlock. Go do the thing you've been putting off.</p>
-  </section>
-
-  <section class="card">
-    <label for="limit">Time allowed on your apps each day</label>
-    <select id="limit">
-      <option value="15">15 minutes</option>
-      <option value="30">30 minutes</option>
-      <option value="45">45 minutes</option>
-      <option value="60">1 hour</option>
-      <option value="90">1 hour 30 minutes</option>
-      <option value="120">2 hours</option>
-    </select>
-    <p class="note" id="limitNote"></p>
   </section>
 
   <section class="card" id="setup">
@@ -194,19 +181,13 @@ if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 $("addr").textContent = ADDRESS;
 
-// A new limit only starts tomorrow, so it can't be raised to get back in today.
+// The daily limit is fixed, so it can't be raised to get more time.
+const DAILY_LIMIT = 30;
 const dayKey = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
-const savedLimit = () => Number(store.get("doit-limit") || 30);
-const todayLimit = () => Number(store.get("doit-limit-" + dayKey()) || savedLimit());
+const todayLimit = () => DAILY_LIMIT;
 const usedMs = () => Number(store.get("doit-used-" + dayKey()) || 0);
 const leftMs = () => Math.max(0, todayLimit() * 60000 - usedMs());
 const fmtMin = (ms) => { const m = Math.ceil(ms / 60000); return m + (m === 1 ? " minute" : " minutes"); };
-
-$("limit").onchange = (e) => {
-  if (!store.get("doit-limit-" + dayKey())) store.set("doit-limit-" + dayKey(), String(savedLimit()));
-  store.set("doit-limit", e.target.value);
-  showGo();
-};
 
 let timerId = null;
 
@@ -215,10 +196,6 @@ function showGo() {
   $("running").hidden = true;
   $("locked").hidden = true;
   $("go").hidden = false;
-  $("limit").value = String(savedLimit());
-  $("limitNote").textContent = savedLimit() !== todayLimit()
-    ? "Your new limit starts tomorrow. Today you still have " + todayLimit() + " minutes in total."
-    : "";
   const left = leftMs();
   $("todayLeft").textContent = fmtMin(left);
   // Offer chunks up to what's left today.
@@ -233,7 +210,6 @@ function showGo() {
 $("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
 
 $("start").onclick = () => {
-  store.set("doit-limit-" + dayKey(), String(todayLimit())); // today's limit is now fixed
   const len = Math.min(Number($("minutes").value) * 60000, leftMs());
   if (len <= 0) return showLocked();
   store.set("doit-used-" + dayKey(), String(usedMs() + len));
