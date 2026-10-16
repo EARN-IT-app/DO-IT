@@ -19,6 +19,19 @@ struct DOITApp: App {
             MorningAlarm.hour = 7
             MorningAlarm.minute = 0
         }
+        // "-demoRingSoon" sets a real alarm for the next minute, for the video GitHub records.
+        if CommandLine.arguments.contains("-demoRingSoon") {
+            let cal = Calendar.current
+            var t = cal.dateInterval(of: .minute, for: Date())!.end
+            if t.timeIntervalSinceNow < 30 { t = t.addingTimeInterval(60) }
+            MorningAlarm.hour = cal.component(.hour, from: t)
+            MorningAlarm.minute = cal.component(.minute, from: t)
+            Task {
+                #if canImport(AlarmKit)
+                if #available(iOS 26.0, *) { _ = await RealAlarms.schedule([t]) }
+                #endif
+            }
+        }
     }
 
     var body: some Scene {

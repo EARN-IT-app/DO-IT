@@ -1,5 +1,6 @@
 # Runs the iPhone app on a test iPhone (the simulator) and records the screen:
-# the home screen, then the morning alarm going off. Saves ios/screenshots/demo.mp4.
+# the home screen, the real alarm going off, and its button opening DO IT.
+# Saves ios/screenshots/demo.mp4.
 # The simulator can't record sound, so the video is silent.
 name: iPhone app video
 
@@ -39,10 +40,9 @@ jobs:
           xcrun simctl io "$DEVICE" recordVideo --codec=h264 --force raw.mp4 &
           REC=$!
           sleep 3
-          xcrun simctl launch "$DEVICE" $ID -demo; sleep 8
-          xcrun simctl terminate "$DEVICE" $ID
-          xcrun simctl launch "$DEVICE" $ID -demo -demoAlarm; sleep 40
-          xcrun simctl io "$DEVICE" screenshot screenshots/3-alarm.png
+          # The test opens DO IT, allows alarms, waits for the alarm and taps its button.
+          xcodebuild test -project DOIT.xcodeproj -scheme DOIT -destination "id=$DEVICE" \
+            -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO | tail -30 || true
           kill -INT $REC; wait $REC || true
           # Smaller file that plays everywhere.
           ffmpeg -y -i raw.mp4 -vf "scale=590:-2,fps=30" -c:v libx264 -pix_fmt yuv420p -crf 28 -movflags +faststart -an screenshots/demo.mp4

@@ -103,3 +103,23 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.wonderbread4912.doit.shieldaction
+
+  # Only used by GitHub to record a video of the alarm going off on a test iPhone.
+  DOITUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: DOIT
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: DOIT
+
+schemes:
+  DOIT:
+    build:
+      targets:
+        DOIT: all
+    test:
+      targets: [DOITUITests]
