@@ -11,27 +11,31 @@ struct AlarmView: View {
     @State private var message: String?
 
     var body: some View {
-        VStack(spacing: 22) {
-            Spacer()
-            Image(systemName: "alarm.fill").font(.system(size: 64)).foregroundColor(doitGreen)
-            Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
-            Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
-                .multilineTextAlignment(.center).foregroundColor(.secondary)
-            if !camera {
-                AlarmVideo()
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+        ZStack {
+            // The video fills the whole screen, with the words and button on top.
+            if camera { Color.black.ignoresSafeArea() } else { AlarmVideo().ignoresSafeArea() }
+            LinearGradient(colors: [.black.opacity(0.8), .clear, .clear, .black.opacity(0.85)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+            VStack(spacing: 16) {
+                Image(systemName: "alarm.fill").font(.system(size: 48)).foregroundColor(doitGreen)
+                Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
+                Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
+                    .multilineTextAlignment(.center)
+                if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
+                Spacer()
+                Button { camera = true } label: {
+                    Text(checking ? "Checking..." : "Open camera").bold().frame(maxWidth: .infinity, minHeight: 60)
+                }
+                .buttonStyle(.borderedProminent)
+                .foregroundColor(.black)
+                .disabled(checking)
             }
-            if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
-            Spacer()
-            Button { camera = true } label: {
-                Text(checking ? "Checking..." : "Open camera").bold().frame(maxWidth: .infinity, minHeight: 60)
-            }
-            .buttonStyle(.borderedProminent)
-            .foregroundColor(.black)
-            .disabled(checking)
+            .foregroundColor(.white)
+            .shadow(color: .black.opacity(0.8), radius: 8)
+            .padding(28)
         }
-        .padding(28)
         .fullScreenCover(isPresented: $camera) {
             Camera { image in
                 camera = false

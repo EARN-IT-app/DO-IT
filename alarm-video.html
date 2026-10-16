@@ -5,30 +5,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DO IT alarm video</title>
 <style>
-  /* Plays the first 25 seconds of the "Just Do It" video over and over, with sound.
-     Used by the morning alarm on the website and in the iPhone app. */
+  /* Plays the first 25 seconds of the "Just Do It" video over and over, filling the
+     whole frame. Used by the morning alarm on the website and in the iPhone app. */
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  #player, iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-  #tap {
-    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
-    background: rgba(0, 0, 0, .6); color: #000; border: 0; cursor: pointer;
-    font: 700 22px -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Cover the frame like a full-screen video: crop the sides instead of showing bars. */
+  #player {
+    position: absolute; top: 50%; left: 50%; border: 0; pointer-events: none;
+    width: max(100vw, 177.78vh); height: max(100vh, 56.25vw); transform: translate(-50%, -50%);
   }
-  #tap span { background: #00d26a; padding: 16px 26px; border-radius: 14px; }
+  /* Taps anywhere turn the sound on. */
+  #tap { position: absolute; inset: 0; background: transparent; border: 0; padding: 0; cursor: pointer; }
+  #hint {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none;
+    background: #00d26a; color: #000; padding: 10px 18px; border-radius: 999px; white-space: nowrap;
+    font: 700 16px -apple-system, "Segoe UI", Roboto, sans-serif; pointer-events: none;
+  }
 </style>
 </head>
 <body>
 <div id="player"></div>
-<button id="tap" type="button"><span>Tap for sound</span></button>
+<button id="tap" type="button" aria-label="Turn the sound on"></button>
+<div id="hint">Tap anywhere for sound</div>
 <script>
 const CLIP_END = 25;
-let player = null, timer = null;
+let player = null;
 const tell = (msg) => { try { parent.postMessage({ doit: msg }, "*"); } catch {} };
+const hint = (show) => { document.getElementById("hint").style.display = show ? "block" : "none"; };
 
-function start() {
+function soundOn() {
+  if (!player) return;
   player.unMute();
   player.setVolume(100);
-  player.seekTo(0, true);
   player.playVideo();
 }
 
@@ -36,29 +43,39 @@ window.onYouTubeIframeAPIReady = () => {
   player = new YT.Player("player", {
     videoId: "ZXsQAXx_ao0",
     host: "https://www.youtube-nocookie.com",
-    playerVars: { autoplay: 1, playsinline: 1, controls: 0, rel: 0, modestbranding: 1, start: 0 },
+    // Starting muted lets the video play by itself; phones block sound until a tap.
+    playerVars: { autoplay: 1, mute: 1, playsinline: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, rel: 0, start: 0 },
     events: {
       onReady: () => {
-        start();
-        // If the browser blocked sound, show a button to start it with a tap.
+        player.mute();
+        player.playVideo();
+        // Try for sound right away. If the browser pauses the video for it, play it muted.
         setTimeout(() => {
-          if (player.getPlayerState() !== 1 || player.isMuted()) document.getElementById("tap").style.display = "flex";
-        }, 2000);
+          player.unMute();
+          player.setVolume(100);
+          setTimeout(() => {
+            if (player.getPlayerState() !== 1) { player.mute(); player.playVideo(); }
+            if (player.isMuted() || player.getPlayerState() !== 1) hint(true);
+          }, 800);
+        }, 300);
         // Back to the start after 25 seconds, so it repeats.
-        timer = setInterval(() => {
+        setInterval(() => {
           if (player.getCurrentTime && player.getCurrentTime() >= CLIP_END) player.seekTo(0, true);
         }, 250);
       },
       onStateChange: (e) => {
-        if (e.data === 1 && !player.isMuted()) { document.getElementById("tap").style.display = "none"; tell("playing"); }
-        if (e.data === 0) start();
+        if (e.data === 1 && !player.isMuted()) { hint(false); tell("playing"); }
+        if (e.data === 0) { player.seekTo(0, true); player.playVideo(); }
+        // Phones pause it if sound starts without a tap. Keep it going, muted.
+        if (e.data === 2) { if (!player.isMuted()) { player.mute(); hint(true); } player.playVideo(); }
       },
       onError: () => tell("error"),
     },
   });
 };
 
-document.getElementById("tap").onclick = () => { if (player) start(); };
+document.getElementById("tap").onclick = soundOn;
+window.soundOn = soundOn;
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 </body>
