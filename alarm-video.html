@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DO IT alarm video</title>
 <style>
-  /* Plays the first 25 seconds of the "Just Do It" video over and over, filling the
+  /* Plays the first 22 seconds of the "Just Do It" video over and over, filling the
      whole frame. Used by the morning alarm on the website and in the iPhone app. */
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
   /* Cover the frame like a full-screen video: crop the sides instead of showing bars,
@@ -28,7 +28,7 @@
 <button id="tap" type="button" aria-label="Turn the sound on"></button>
 <div id="hint">Tap anywhere for sound</div>
 <script>
-const CLIP_END = 25;
+const CLIP_END = 22;
 let player = null;
 const tell = (msg) => { try { parent.postMessage({ doit: msg }, "*"); } catch {} };
 const hint = (show) => { document.getElementById("hint").style.display = show ? "block" : "none"; };
@@ -59,7 +59,7 @@ window.onYouTubeIframeAPIReady = () => {
             if (player.isMuted() || player.getPlayerState() !== 1) hint(true);
           }, 800);
         }, 300);
-        // Back to the start after 25 seconds, so it repeats.
+        // Back to the start after 22 seconds, so it repeats.
         setInterval(() => {
           if (player.getCurrentTime && player.getCurrentTime() >= CLIP_END) player.seekTo(0, true);
         }, 250);
