@@ -183,20 +183,29 @@ struct TodayView: View {
 
     var body: some View {
         let _ = now // redraw every second
+        ScrollViewReader { scroll in
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Text("DO IT").font(.system(size: 44, weight: .black))
+                    Text("DO IT").font(.system(size: 30, weight: .black))
                     Spacer()
                     Label("\(Limit.streak) day\(Limit.streak == 1 ? "" : "s")", systemImage: "flame.fill")
                         .font(.headline).foregroundColor(doitGreen)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(Color.white.opacity(0.08)).clipShape(Capsule())
                         .accessibilityLabel("\(Limit.streak) day streak")
                 }
 
                 todayCard
-                focusCard
-                bedtimeCard
-                alarmCard
+                // Shortcuts under the ring: each jumps to its settings below.
+                HStack(spacing: 12) {
+                    chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
+                    chip("moon.fill", "Bedtime", bedtime ? "On · 10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
+                    chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
+                }
+                focusCard.id("focus")
+                bedtimeCard.id("bedtime")
+                alarmCard.id("alarm")
 
                 Button(action: change) {
                     Text("Change apps").bold().frame(maxWidth: .infinity, minHeight: 50)
@@ -208,6 +217,9 @@ struct TodayView: View {
             }
             .padding(20)
         }
+        }
+        .background(RadialGradient(colors: [Color(red: 0.05, green: 0.23, blue: 0.13), .black],
+                                   center: UnitPoint(x: 0.5, y: 0.2), startRadius: 0, endRadius: 420).ignoresSafeArea())
         .onReceive(tick) { now = $0 }
         .alert("Focus for \(askFocus ?? 0) minutes?", isPresented: Binding(get: { askFocus != nil }, set: { if !$0 { askFocus = nil } })) {
             Button("Lock my apps") {
@@ -224,7 +236,41 @@ struct TodayView: View {
         }
     }
 
-    private var todayCard: some View {
+    private func chip(_ icon: String, _ title: String, _ detail: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: icon).font(.title2).foregroundColor(doitGreen)
+                Text(title).bold().foregroundColor(.white)
+                Text(detail).font(.footnote).foregroundColor(.secondary).lineLimit(1).minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity).padding(.vertical, 16)
+            .background(Color.white.opacity(0.07))
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.1)))
+            .clipShape(RoundedRectangle(cornerRadius: 22))
+        }
+    }
+
+    @ViewBuilder private var todayCard: some View {
+        if !Limit.lockedToday {
+            // One big ring for the time left today.
+            let used = Limit.usedToday
+            VStack(spacing: 10) {
+                ZStack {
+                    Circle().stroke(Color.white.opacity(0.1), lineWidth: 16)
+                    Circle().trim(from: 0, to: CGFloat(Limit.minutes - used) / CGFloat(Limit.minutes))
+                        .stroke(doitGreen, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 4) {
+                        Text("\(Limit.minutes - used)").font(.system(size: 84, weight: .black))
+                        Text("minutes left today").font(.headline).foregroundColor(.secondary)
+                    }
+                }
+                .frame(width: 260, height: 260)
+                Text("You've used \(used) of your \(Limit.minutes) minutes.").foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+        } else {
         Card {
             if Limit.lockedToday {
                 let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(86400)
@@ -252,6 +298,7 @@ struct TodayView: View {
                     }
                 }
             }
+        }
         }
     }
 

@@ -107,11 +107,24 @@ select {
 }
 .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--good); font-weight: 700; white-space: nowrap; }
-.today { display: flex; align-items: center; gap: 20px; }
-.ring { flex: none; width: 110px; height: 110px; }
-.ring .bg { stroke: var(--line); }
+/* Home screen: one big ring for the time left today, with shortcuts underneath. */
+body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed, var(--bg); }
+.logo { font-family: var(--display); font-weight: 400; font-size: 30px; margin: 0; letter-spacing: 0; }
+.top { align-items: center; }
+#go { background: transparent; border: 0; padding: 0; align-items: stretch; }
+.bigring { position: relative; width: min(270px, 72vw); aspect-ratio: 1; margin: 6px auto 0; }
+.bigring svg { width: 100%; height: 100%; display: block; }
+.ring .bg { stroke: #ffffff18; }
 .ring .fg { stroke: var(--good); transition: stroke-dashoffset .4s; }
-.ring text { fill: var(--fg); font: 400 30px var(--display); }
+.bigring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.bigring .num { font: 400 clamp(64px, 22vw, 84px)/1 var(--display); }
+.bigring .sub { color: var(--muted); font-weight: 600; margin-top: 6px; }
+.used { text-align: center; color: var(--muted); margin: 0; }
+.chiprow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.chip { background: #ffffff10; border: 1px solid #ffffff1a; border-radius: 22px; padding: 16px 8px; text-align: center; color: var(--fg); font: inherit; cursor: pointer; }
+.chip .i { display: block; font-size: 28px; line-height: 1.2; }
+.chip b { display: block; margin-top: 6px; }
+.chip small { display: block; color: var(--muted); font-size: 13px; }
 .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .chips .btn { min-height: 52px; font-size: 17px; }
 .switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; }
@@ -159,10 +172,9 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
 <body>
 <main>
   <div class="top">
-    <h1><span>DO</span><br><span>IT</span></h1>
+    <h1 class="logo">DO IT</h1>
     <span class="pill" id="streak" aria-label="Streak">🔥 0 days</span>
   </div>
-  <p class="lede">You get 30 minutes a day on your apps. When it's used up, they stay locked until tomorrow.</p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -173,17 +185,18 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
   </section>
 
   <section class="card" id="go">
-    <p class="eyebrow">Today</p>
-    <div class="today">
+    <div class="bigring">
       <svg class="ring" viewBox="0 0 110 110" aria-hidden="true">
-        <circle class="bg" cx="55" cy="55" r="46" fill="none" stroke-width="12"/>
-        <circle class="fg" id="ringFg" cx="55" cy="55" r="46" fill="none" stroke-width="12" stroke-linecap="round" transform="rotate(-90 55 55)"/>
-        <text id="ringNum" x="55" y="66" text-anchor="middle">30</text>
+        <circle class="bg" cx="55" cy="55" r="48" fill="none" stroke-width="7"/>
+        <circle class="fg" id="ringFg" cx="55" cy="55" r="48" fill="none" stroke-width="7" stroke-linecap="round" transform="rotate(-90 55 55)"/>
       </svg>
-      <div>
-        <p class="task" id="todayLeft">30 min left</p>
-        <p class="note">Out of 30 minutes today.</p>
-      </div>
+      <div class="mid"><span class="num" id="ringNum">30</span><span class="sub">minutes left today</span></div>
+    </div>
+    <p class="used" id="todayLeft">You get 30 minutes a day on your apps.</p>
+    <div class="chiprow">
+      <button class="chip" type="button" data-go="focusCard"><span class="i">🎯</span><b>Focus</b><small>Lock now</small></button>
+      <button class="chip" type="button" data-go="bedCard"><span class="i">🌙</span><b>Bedtime</b><small id="chipBed">Off</small></button>
+      <button class="chip" type="button" data-go="alarmCard"><span class="i">⏰</span><b>Alarm</b><small id="chipAlarm">Off</small></button>
     </div>
     <label for="minutes">How long do you need right now?</label>
     <select id="minutes"></select>
@@ -227,7 +240,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="bedCard">
     <label class="switch">
       <span>
         <span class="eyebrow" style="display:block">Bedtime lock</span>
@@ -336,6 +349,18 @@ function streak() {
   }
   return n;
 }
+// The shortcut buttons under the ring jump to their settings and show what's on.
+function showChips() {
+  $("chipBed").textContent = bedtimeOn() ? "On · 10 PM" : "Off";
+  const t = store.get("doit-alarm-time") || "07:00";
+  const [h, m] = t.split(":").map(Number);
+  $("chipAlarm").textContent = store.get("doit-alarm") === "1" ? ((h % 12) || 12) + ":" + String(m).padStart(2, "0") + (h < 12 ? " AM" : " PM") : "Off";
+}
+document.addEventListener("change", () => setTimeout(showChips, 0));
+document.querySelectorAll(".chip").forEach((b) => {
+  b.onclick = () => $(b.dataset.go).scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
 function showStreak() {
   const n = streak();
   $("streak").textContent = "🔥 " + n + (n === 1 ? " day" : " days");
@@ -356,9 +381,11 @@ function showGo() {
   only("go");
   const left = leftMs();
   const leftMin = Math.ceil(left / 60000);
-  $("todayLeft").textContent = leftMin + " min left";
+  const usedMin = Math.max(0, DAILY_LIMIT - leftMin);
+  $("todayLeft").textContent = "You've used " + usedMin + " of your " + DAILY_LIMIT + " minutes.";
   $("ringNum").textContent = leftMin;
-  const c = 2 * Math.PI * 46;
+  showChips();
+  const c = 2 * Math.PI * 48;
   $("ringFg").style.strokeDasharray = c;
   $("ringFg").style.strokeDashoffset = c * (1 - left / (DAILY_LIMIT * 60000));
   // Offer chunks up to what's left today.
