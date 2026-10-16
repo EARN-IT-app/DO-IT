@@ -18,7 +18,9 @@ struct SettingsView: View {
                 if inTab {
                     Section {
                         HStack(spacing: 14) {
-                            Text(String((name.isEmpty ? "Me" : name).prefix(1)).uppercased())
+                            Group {
+                                if name.isEmpty { Image(systemName: "person.fill") } else { Text(String(name.prefix(1)).uppercased()) }
+                            }
                                 .font(.system(size: 22, weight: .black)).foregroundColor(.black)
                                 .frame(width: 54, height: 54).background(doitGreen).clipShape(Circle())
                             VStack(alignment: .leading, spacing: 2) {
@@ -111,7 +113,7 @@ struct LayoutView: View {
 
 // Which cards the home screen shows, and in what order. Saved as comma lists.
 enum Layout {
-    static let all = ["focus", "goal", "opens", "week", "bedtime", "alarm"]
+    static let all = ["focus", "goal", "week", "opens", "bedtime", "alarm"]
     // Which tab each card lives on.
     static let todayTab = ["goal"]
     static let focusTab = ["focus", "bedtime", "alarm"]
