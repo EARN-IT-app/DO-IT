@@ -1,0 +1,57 @@
+# Runs the iPhone app on a test iPhone (the simulator) and records the screen:
+# the home screen, then the morning alarm going off. Saves ios/screenshots/demo.mp4.
+# The simulator can't record sound, so the video is silent.
+name: iPhone app video
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  video:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Build for the test iPhone
+        run: |
+          brew install xcodegen ffmpeg
+          cd ios && xcodegen generate
+          xcodebuild -project DOIT.xcodeproj -scheme DOIT -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build | tail -5
+      - name: Record the video
+        run: |
+          cd ios
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone 16 Pro') or x['name'].startswith('iPhone 17 Pro')))")
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl status_bar "$DEVICE" override --time "7:00" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+          xcrun simctl ui "$DEVICE" appearance dark
+          ID=io.github.wonderbread4912.doit
+          xcrun simctl install "$DEVICE" build/Build/Products/Debug-iphonesimulator/DOIT.app
+          mkdir -p screenshots
+          xcrun simctl io "$DEVICE" recordVideo --codec=h264 --force raw.mp4 &
+          REC=$!
+          sleep 3
+          xcrun simctl launch "$DEVICE" $ID -demo; sleep 8
+          xcrun simctl terminate "$DEVICE" $ID
+          xcrun simctl launch "$DEVICE" $ID -demo -demoAlarm; sleep 40
+          xcrun simctl io "$DEVICE" screenshot screenshots/3-alarm.png
+          kill -INT $REC; wait $REC || true
+          # Smaller file that plays everywhere.
+          ffmpeg -y -i raw.mp4 -vf "scale=590:-2,fps=30" -c:v libx264 -pix_fmt yuv420p -crf 28 -movflags +faststart -an screenshots/demo.mp4
+          ls -la screenshots
+      - name: Save the video
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ios/screenshots
+          git commit -m "Update iPhone app video [skip ci]"
+          git pull --rebase origin main
+          git push
