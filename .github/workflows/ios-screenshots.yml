@@ -1,0 +1,56 @@
+# Runs the iPhone app on a test iPhone (the simulator) and saves pictures
+# of its main screens into ios/screenshots.
+name: iPhone app screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Xcode 26
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - name: Build for the test iPhone
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate
+          xcodebuild -project DOIT.xcodeproj -scheme DOIT -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build | tail -5
+      - name: Take the pictures
+        run: |
+          cd ios
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k in sorted(d, reverse=True) if 'iOS' in k for x in d[k] if x['name'].startswith('iPhone 16 Pro') or x['name'].startswith('iPhone 17 Pro')))")
+          echo "Using $DEVICE"
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl status_bar "$DEVICE" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+          xcrun simctl ui "$DEVICE" appearance dark
+          APP=build/Build/Products/Debug-iphonesimulator/DOIT.app
+          ID=io.github.wonderbread4912.doit
+          mkdir -p screenshots
+          xcrun simctl install "$DEVICE" "$APP"
+          xcrun simctl launch "$DEVICE" $ID; sleep 6
+          xcrun simctl io "$DEVICE" screenshot screenshots/1-setup.png
+          xcrun simctl terminate "$DEVICE" $ID
+          xcrun simctl launch "$DEVICE" $ID -demo; sleep 6
+          xcrun simctl io "$DEVICE" screenshot screenshots/2-home.png
+          xcrun simctl terminate "$DEVICE" $ID
+          xcrun simctl launch "$DEVICE" $ID -demo -demoAlarm; sleep 6
+          xcrun simctl io "$DEVICE" screenshot screenshots/3-alarm.png
+          ls -la screenshots
+      - name: Save the pictures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ios/screenshots
+          git commit -m "Update iPhone app screenshots [skip ci]"
+          git pull --rebase origin main
+          git push

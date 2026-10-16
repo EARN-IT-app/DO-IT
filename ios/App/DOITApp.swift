@@ -7,6 +7,20 @@ import UserNotifications
 
 @main
 struct DOITApp: App {
+    init() {
+        // "-demo" fills in example numbers, for the screenshots GitHub takes.
+        if CommandLine.arguments.contains("-demo") {
+            UserDefaults.standard.set(true, forKey: "setUpDone")
+            shared.set(dayKey(), forKey: "countingDay")
+            shared.set(dayKey(), forKey: "usedDay")
+            shared.set(10, forKey: "used")
+            shared.set(5, forKey: "streak")
+            MorningAlarm.on = true
+            MorningAlarm.hour = 7
+            MorningAlarm.minute = 0
+        }
+    }
+
     var body: some Scene {
         WindowGroup { RootView().tint(.green).preferredColorScheme(.dark) }
     }
@@ -37,7 +51,9 @@ struct RootView: View {
             guard now == .active else { return }
             ringing = MorningAlarm.ringing
             if setUpDone { Limit.checkDay() }
-            Task { await MorningAlarm.reschedule() } // top up the next few days
+            if !CommandLine.arguments.contains("-demo") {
+                Task { await MorningAlarm.reschedule() } // top up the next few days
+            }
         }
     }
 }

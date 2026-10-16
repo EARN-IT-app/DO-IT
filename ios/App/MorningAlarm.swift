@@ -41,6 +41,7 @@ enum MorningAlarm {
 
     /// The alarm is going off right now and hasn't been stopped with a photo.
     static var ringing: Bool {
+        if CommandLine.arguments.contains("-demoAlarm") { return true }
         guard on, !doneToday else { return false }
         let now = Date()
         return now >= time && now < time.addingTimeInterval(Double(windowMinutes) * 60)
