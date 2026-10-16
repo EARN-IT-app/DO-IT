@@ -11,6 +11,8 @@
 		08D580EFECE2F2E53B8C60D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACF230C74E48AAC6CBB799E2 /* Assets.xcassets */; };
 		0902809BF87A0BB4A1DCB1E4 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 		1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+		33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441780F300B64F621B420563 /* MirrorPhoto.swift */; };
+		40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */; };
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
 		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
 		8EDDDA1830C8A5D8FC876E25 /* ShieldConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */; };
@@ -65,6 +67,7 @@
 		0EEC29C62787995A5582E2BA /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 		0F7DBD5A7A6CBD177448BC99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		441780F300B64F621B420563 /* MirrorPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorPhoto.swift; sourceTree = "<group>"; };
 		4EECED60B7F91B1E8DB6207B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E95619B361E2EAED0BB6544 /* Monitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Monitor.entitlements; sourceTree = "<group>"; };
@@ -79,6 +82,7 @@
 		C08ABF30980AE21A1823E42E /* Shield.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Shield.entitlements; sourceTree = "<group>"; };
 		C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldActions.swift; sourceTree = "<group>"; };
 		D0A2D88D4AF82E0E2DEA0F03 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorningAlarm.swift; sourceTree = "<group>"; };
 		F9FCE5AC84C80878B224DF03 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,6 +94,8 @@
 				A6462981646F5292DD39FA26 /* DOIT.entitlements */,
 				7FF8748AE7451C1940718DF8 /* DOITApp.swift */,
 				0F7DBD5A7A6CBD177448BC99 /* Info.plist */,
+				441780F300B64F621B420563 /* MirrorPhoto.swift */,
+				D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -293,6 +299,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */,
+				33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */,
+				40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */,
 				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

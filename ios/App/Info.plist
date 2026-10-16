@@ -22,6 +22,10 @@
 	<string>1</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>DO IT uses alarms for your morning alarm, which keeps ringing until you take a mirror photo.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>DO IT uses the camera for the mirror photo that stops your morning alarm.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>
