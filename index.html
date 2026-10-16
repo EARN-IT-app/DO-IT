@@ -128,8 +128,15 @@ body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed
 .bigring .num { font: 400 clamp(64px, 22vw, 84px)/1 var(--display); }
 .bigring .sub { color: var(--muted); font-weight: 600; margin-top: 6px; }
 .used { text-align: center; color: var(--muted); margin: 0; }
-.chiprow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.chip { background: #ffffff10; border: 1px solid #ffffff1a; border-radius: 22px; padding: 16px 8px; text-align: center; color: var(--fg); font: inherit; cursor: pointer; }
+.chiprow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stretch { display: flex; align-items: center; gap: 14px; }
+.stretch .i { font-size: 30px; }
+.stretch b { display: block; }
+.stretch small { color: var(--muted); font-size: 14px; }
+#stretchNow .i { font-size: 72px; text-align: center; }
+#stretchClock { font: 400 64px/1 var(--display); text-align: center; color: var(--good); margin: 0; }
+.opens { font: 400 56px/1 var(--display); margin: 0; }
+.chip { background: #ffffff10; border: 1px solid #ffffff1a; border-radius: 20px; padding: 14px 4px; text-align: center; color: var(--fg); font: inherit; cursor: pointer; }
 .chip .i { display: block; font-size: 28px; line-height: 1.2; }
 .chip b { display: block; margin-top: 6px; }
 .chip small { display: block; color: var(--muted); font-size: 13px; }
@@ -205,6 +212,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
       <button class="chip" type="button" data-go="focusCard"><span class="i">🎯</span><b>Focus</b><small>Lock now</small></button>
       <button class="chip" type="button" data-go="bedCard"><span class="i">🌙</span><b>Bedtime</b><small id="chipBed">Off</small></button>
       <button class="chip" type="button" data-go="alarmCard"><span class="i">⏰</span><b>Alarm</b><small id="chipAlarm">Off</small></button>
+      <button class="chip" type="button" data-go="stretchCard"><span class="i">🧘</span><b>Stretch</b><small>Morning</small></button>
     </div>
     <label for="minutes">How long do you need right now?</label>
     <select id="minutes"></select>
@@ -271,6 +279,27 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <label for="goalIn">What do you want to get done tomorrow?</label>
     <input type="text" id="goalIn" class="goalin" maxlength="80" placeholder="Finish my essay">
     <p class="note">It shows up on your alarm in the morning.</p>
+  </section>
+
+  <section class="card" id="opensCard">
+    <p class="eyebrow">App checker</p>
+    <p class="opens" id="opensToday">0</p>
+    <p class="body" id="opensNote">times you opened your blocked apps today.</p>
+    <p class="note" id="opensWeek"></p>
+  </section>
+
+  <section class="card" id="stretchCard">
+    <p class="eyebrow">Morning stretches</p>
+    <div id="stretchList"></div>
+    <div id="stretchNow" hidden>
+      <div class="i" id="stretchIcon"></div>
+      <p class="task" id="stretchName" style="text-align:center"></p>
+      <p class="body" id="stretchHow" style="text-align:center"></p>
+      <p id="stretchClock">0:30</p>
+      <p class="note" id="stretchStep" style="text-align:center"></p>
+      <button class="btn ghost" id="stretchSkip" type="button">Next stretch</button>
+    </div>
+    <button class="btn" id="stretchGo" type="button">Start stretching (4 minutes)</button>
   </section>
 
   <section class="card" id="weekCard">
@@ -360,7 +389,8 @@ const DEVICE_APP = store.get(APP_KEY);
 if (DEVICE_APP) { $("quick").hidden = true; $("setup").hidden = true; }
 if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
-$("addr").textContent = ADDRESS;
+// The Shortcut opens this address with ?open=1, so each time a blocked app is opened gets counted.
+$("addr").textContent = ADDRESS + "?open=1";
 
 const dayKey = (d = new Date()) => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
 const usedOn = (key) => Number(store.get("doit-used-" + key) || 0);
@@ -414,7 +444,7 @@ function only(id) {
   const locked = id === "blocked" || id === "ringing" || id === "homework";
   $("focusCard").hidden = locked;
   $("homeworkCard").hidden = locked;
-  showWeek(); showGoal();
+  showWeek(); showGoal(); showOpens();
   if (id !== "ringing") stopBeeping();
   showStreak();
 }
@@ -696,6 +726,59 @@ function showWeek() {
     best.d.toLocaleDateString([], { weekday: "long" }) + " (" + best.min + " min).";
 }
 
+// App checker: counts each time the Shortcut sends you here from a blocked app.
+const opensOn = (key) => Number(store.get("doit-opens-" + key) || 0);
+if (new URLSearchParams(location.search).get("open") === "1") {
+  store.set("doit-opens-" + dayKey(), String(opensOn(dayKey()) + 1));
+  history.replaceState(null, "", location.pathname); // so a reload doesn't count twice
+}
+function showOpens() {
+  const n = opensOn(dayKey());
+  $("opensToday").textContent = n;
+  $("opensNote").textContent = (n === 1 ? "time" : "times") + " you opened your blocked apps today.";
+  let week = 0;
+  for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); week += opensOn(dayKey(d)); }
+  $("opensWeek").textContent = week + " this week. It counts each time one of your apps sends you to DO IT.";
+}
+
+// Morning stretches: eight easy stretches, 30 seconds each.
+const STRETCHES = [
+  ["🙆", "Reach for the sky", "Stand tall and stretch both arms straight up. Reach higher and higher."],
+  ["🔄", "Neck rolls", "Slowly roll your head in a circle. Switch directions halfway."],
+  ["🤷", "Shoulder rolls", "Roll your shoulders back in big circles, then forward."],
+  ["↔️", "Side bends", "Arms up, lean to the left, then to the right. Go slow."],
+  ["🙇", "Touch your toes", "Bend forward and let your arms hang down. Keep your knees soft."],
+  ["🦵", "Quad stretch", "Hold one foot behind you, then switch legs halfway. Hold a wall if you need."],
+  ["⭕", "Hip circles", "Hands on hips, make big circles. Switch directions halfway."],
+  ["🐈", "Cat and cow", "On hands and knees, round your back up, then let it dip down. Repeat."],
+];
+const STRETCH_SECS = 30;
+$("stretchList").innerHTML = STRETCHES.map((s) =>
+  '<div class="stretch"><span class="i">' + s[0] + "</span><span><b>" + s[1] + "</b><small>30 seconds</small></span></div>").join("");
+$("stretchList").style.cssText = "display:flex;flex-direction:column;gap:12px";
+let stretchTimer = null, stretchAt = 0, stretchEnd = 0;
+function showStretch() {
+  if (stretchAt >= STRETCHES.length) { stopStretch(); $("stretchGo").textContent = "Done! Stretch again"; return; }
+  const [i, name, how] = STRETCHES[stretchAt];
+  $("stretchIcon").textContent = i; $("stretchName").textContent = name; $("stretchHow").textContent = how;
+  $("stretchStep").textContent = "Stretch " + (stretchAt + 1) + " of " + STRETCHES.length;
+  stretchEnd = Date.now() + STRETCH_SECS * 1000;
+}
+function tickStretch() {
+  const left = Math.max(0, Math.ceil((stretchEnd - Date.now()) / 1000));
+  $("stretchClock").textContent = "0:" + String(left).padStart(2, "0");
+  if (left === 0) { stretchAt++; if (beep) try { beep(); } catch {} showStretch(); }
+}
+function stopStretch() {
+  clearInterval(stretchTimer); stretchTimer = null;
+  $("stretchNow").hidden = true; $("stretchList").hidden = false; $("stretchGo").hidden = false;
+}
+$("stretchGo").onclick = () => {
+  stretchAt = 0; $("stretchList").hidden = true; $("stretchGo").hidden = true; $("stretchNow").hidden = false;
+  showStretch(); tickStretch(); stretchTimer = setInterval(tickStretch, 250);
+};
+$("stretchSkip").onclick = () => { stretchAt++; showStretch(); };
+
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
   keepAwake();
@@ -725,7 +808,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 window.addEventListener("pageshow", (e) => { if (e.persisted) resume(); });
 
 $("copy").onclick = async () => {
-  try { await navigator.clipboard.writeText(ADDRESS); $("copy").textContent = "Copied"; }
+  try { await navigator.clipboard.writeText(ADDRESS + "?open=1"); $("copy").textContent = "Copied"; }
   catch { $("copy").textContent = "Press and hold the address above to copy it"; }
 };
 </script>
