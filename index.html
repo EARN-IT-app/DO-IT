@@ -136,6 +136,13 @@ body { background: radial-gradient(circle at 50% 18%, #0c3a22 0, #000 55%) fixed
 #stretchNow .i { font-size: 72px; text-align: center; }
 #stretchClock { font: 400 64px/1 var(--display); text-align: center; color: var(--good); margin: 0; }
 .opens { font: 400 56px/1 var(--display); margin: 0; }
+.gear { background: #ffffff14; border: 1px solid #ffffff1a; color: var(--fg); width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; }
+.topright { display: flex; gap: 10px; align-items: center; }
+#settings { position: fixed; inset: 0; z-index: 80; background: var(--bg); overflow-y: auto;
+  padding: max(20px, env(safe-area-inset-top)) 16px max(30px, env(safe-area-inset-bottom)); }
+#settings .in { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+#settings h2 { font: 400 30px var(--display); margin: 0; }
+.hello { margin: -10px 0 0; color: var(--muted); font-weight: 600; }
 .chip { background: #ffffff10; border: 1px solid #ffffff1a; border-radius: 20px; padding: 14px 4px; text-align: center; color: var(--fg); font: inherit; cursor: pointer; }
 .chip .i { display: block; font-size: 28px; line-height: 1.2; }
 .chip b { display: block; margin-top: 6px; }
@@ -188,8 +195,12 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
 <main>
   <div class="top">
     <h1 class="logo">DO IT</h1>
-    <span class="pill" id="streak" aria-label="Streak">🔥 0 days</span>
+    <div class="topright">
+      <span class="pill" id="streak" aria-label="Streak">🔥 0 days</span>
+      <button class="gear" id="openSettings" type="button" aria-label="Settings">⚙︎</button>
+    </div>
   </div>
+  <p class="hello" id="hello" hidden></p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -228,7 +239,7 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
 
   <section class="card pop" id="ringing" hidden>
     <p class="eyebrow">Morning alarm</p>
-    <p class="task">GOOD MORNING. Get up and take a picture of the sink.</p>
+    <p class="task" id="ringTask">GOOD MORNING. Get up and take a picture of the sink.</p>
     <p class="note">The alarm keeps going until you do.</p>
     <p class="note" id="ringGoal" hidden></p>
     <div class="video" id="alarmVideo"></div>
@@ -335,6 +346,40 @@ body.alarm-on #mirrorPreview { max-height: 34vh; width: auto; align-self: center
     <p class="note" id="alarmNote" hidden></p>
     <p class="note">Alarm video: "Just Do It" by Shia LaBeouf, from #INTRODUCTIONS by LaBeouf, Rönkkö &amp; Turner (2015). Played from YouTube.</p>
   </section>
+
+  <div id="settings" hidden>
+    <div class="in">
+      <div class="top"><h2>Settings</h2><button class="gear" id="closeSettings" type="button" aria-label="Close settings">✕</button></div>
+
+      <section class="card">
+        <p class="eyebrow">General</p>
+        <label for="setName">Your name</label>
+        <input type="text" id="setName" class="goalin" maxlength="30" placeholder="So DO IT can say hi">
+        <label class="switch"><span><span class="body">Alarm beeps</span></span><input type="checkbox" id="setSound" role="switch"></label>
+        <label class="switch"><span><span class="body">Vibration</span></span><input type="checkbox" id="setVibrate" role="switch"></label>
+        <label class="switch"><span><span class="body">Motivational quotes</span></span><input type="checkbox" id="setQuotes" role="switch"></label>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Your limit</p>
+        <p class="body">You get 30 minutes a day on your blocked apps. This can't be changed, so you can't give yourself more time.</p>
+        <button class="btn ghost" id="setSetup" type="button">Show the app setup steps</button>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Your data</p>
+        <p class="body">Everything stays on this phone. DO IT has no accounts and doesn't send your information anywhere.</p>
+        <button class="btn ghost" id="setReset" type="button">Clear my data</button>
+        <p class="note">Clears your streak, goals, week and settings. Today's used time stays, so it can't be used to get more time.</p>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">About</p>
+        <p class="body">DO IT, version 1.0. Made to help you stop procrastinating.</p>
+        <p class="note">Alarm video: "Just Do It" by Shia LaBeouf, from #INTRODUCTIONS by LaBeouf, Rönkkö &amp; Turner (2015). Played from YouTube.</p>
+      </section>
+    </div>
+  </div>
 
   <section class="card" id="setup">
     <p class="eyebrow">Pick the apps to block</p>
@@ -592,7 +637,7 @@ $("alarmOn").onchange = (e) => {
 $("alarmTime").onchange = (e) => store.set("doit-alarm-time", e.target.value || "07:00");
 
 function beep() {
-  if (!audio) return;
+  if (!audio || store.get("doit-set-sound") === "0") return;
   audio.resume();
   const now = audio.currentTime;
   for (let i = 0; i < 3; i++) {
@@ -623,7 +668,7 @@ function showRinging() {
     $("alarmVideo").innerHTML = '<iframe src="alarm-video.html" allow="autoplay; encrypted-media" title="Just Do It video"></iframe>';
   }
   if (!beepId) { beep(); beepId = setInterval(beep, 1200); }
-  if (navigator.vibrate) navigator.vibrate([400, 200, 400]);
+  if (navigator.vibrate && store.get("doit-set-vibrate") !== "0") navigator.vibrate([400, 200, 400]);
 }
 
 // The photo check runs on the phone: it loads a small picture checker the first time.
@@ -778,6 +823,39 @@ $("stretchGo").onclick = () => {
   showStretch(); tickStretch(); stretchTimer = setInterval(tickStretch, 250);
 };
 $("stretchSkip").onclick = () => { stretchAt++; showStretch(); };
+
+// Settings: a few general choices, saved on this phone.
+const setting = (k) => store.get("doit-set-" + k) !== "0";
+function applySettings() {
+  const name = store.get("doit-name") || "";
+  $("hello").hidden = !name;
+  $("hello").textContent = "Hi, " + name + ". Let's get things done.";
+  $("ringTask").textContent = "GOOD MORNING" + (name ? ", " + name.toUpperCase() : "") + ". Get up and take a picture of the sink.";
+  $("quote").hidden = !setting("quotes");
+}
+$("openSettings").onclick = () => {
+  $("setName").value = store.get("doit-name") || "";
+  $("setSound").checked = setting("sound");
+  $("setVibrate").checked = setting("vibrate");
+  $("setQuotes").checked = setting("quotes");
+  $("settings").hidden = false; document.body.style.overflow = "hidden";
+};
+$("closeSettings").onclick = () => { $("settings").hidden = true; document.body.style.overflow = ""; applySettings(); };
+$("setName").oninput = (e) => { store.set("doit-name", e.target.value.trim()); applySettings(); };
+for (const k of ["sound", "vibrate", "quotes"]) {
+  $("set" + k[0].toUpperCase() + k.slice(1)).onchange = (e) => { store.set("doit-set-" + k, e.target.checked ? "1" : "0"); applySettings(); };
+}
+$("setSetup").onclick = () => { $("closeSettings").click(); $("setup").hidden = false; $("setup").scrollIntoView({ behavior: "smooth" }); };
+$("setReset").onclick = () => {
+  if (!confirm("Clear your streak, goals, week and settings? This can't be undone.")) return;
+  // Locks stay as they are, so clearing can never be used to get back into your apps.
+  const keep = ["doit-used-" + dayKey(), SESSION_KEY, FOCUS_KEY, HW_KEY, BEDTIME_KEY, "doit-alarm", "doit-alarm-time", "doit-alarm-done", "doit-app"];
+  try {
+    Object.keys(localStorage).filter((k) => k.startsWith("doit-") && !keep.includes(k)).forEach((k) => localStorage.removeItem(k));
+  } catch {}
+  location.reload();
+};
+applySettings();
 
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
