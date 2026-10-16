@@ -8,10 +8,11 @@
   /* Plays the first 25 seconds of the "Just Do It" video over and over, filling the
      whole frame. Used by the morning alarm on the website and in the iPhone app. */
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-  /* Cover the frame like a full-screen video: crop the sides instead of showing bars. */
+  /* Cover the frame like a full-screen video: crop the sides instead of showing bars,
+     zoomed in 5%. */
   #player {
     position: absolute; top: 50%; left: 50%; border: 0; pointer-events: none;
-    width: max(100vw, 177.78vh); height: max(100vh, 56.25vw); transform: translate(-50%, -50%);
+    width: max(100vw, 177.78vh); height: max(100vh, 56.25vw); transform: translate(-50%, -50%) scale(1.05);
   }
   /* Taps anywhere turn the sound on. */
   #tap { position: absolute; inset: 0; background: transparent; border: 0; padding: 0; cursor: pointer; }
