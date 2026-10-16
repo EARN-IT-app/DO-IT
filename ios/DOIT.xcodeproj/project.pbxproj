@@ -14,6 +14,8 @@
 		1EA1870DF6C6FFB54693E277 /* AlarmVideoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438351FEB20401C6A490D78E /* AlarmVideoTests.swift */; };
 		33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441780F300B64F621B420563 /* MirrorPhoto.swift */; };
 		40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */; };
+		43B83CA46D27859AEB0030DE /* DOITReport.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F2FF3A7B64367093DDC140FD /* DOITReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4990375DA775BA75B569A453 /* OpensReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE876DD54A6FD98C9F399D52 /* OpensReport.swift */; };
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
 		4A61929700B5BB6CA0FEE18B /* AlarmVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF3355EF991707E7A5C9B6C /* AlarmVideo.swift */; };
 		84D0AA218009F0D8B1CA76FE /* DOITApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF8748AE7451C1940718DF8 /* DOITApp.swift */; };
@@ -21,7 +23,9 @@
 		93C08063B0C2A5FA87BC8933 /* ShieldActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */; };
 		969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9A87AFADECD086A75AC13571 /* DOITShield.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A51BD9D732B9596F6C61C542 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 		CAC26B56C62461DEEDFE93D0 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
+		E3B16BCB23D98D8427A4FF9B /* Stretches.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74CE821E9B3878A6CA7F4237 /* Stretches.swift */; };
 		F0D0CCC5DE62552F35ABF6ED /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC29C62787995A5582E2BA /* Shared.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +43,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 74C6892DE6F00E1E65E7BAEE;
 			remoteInfo = DOIT;
+		};
+		9FB5FCB9D683FE83537BAA76 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 961F3E87DBCCDDE3BCBFDE1E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F79B80C1B1F1AF1F0449F3D6;
+			remoteInfo = DOITReport;
 		};
 		D67B032D741D655D6158705C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -66,6 +77,7 @@
 				969BD81BFB5580B15124E62E /* DOITMonitor.appex in Embed Foundation Extensions */,
 				9A87AFADECD086A75AC13571 /* DOITShield.appex in Embed Foundation Extensions */,
 				02748A43D99C7E44C97FBB5A /* DOITShieldAction.appex in Embed Foundation Extensions */,
+				43B83CA46D27859AEB0030DE /* DOITReport.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +92,7 @@
 		441780F300B64F621B420563 /* MirrorPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorPhoto.swift; sourceTree = "<group>"; };
 		4EECED60B7F91B1E8DB6207B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6CF3355EF991707E7A5C9B6C /* AlarmVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmVideo.swift; sourceTree = "<group>"; };
+		74CE821E9B3878A6CA7F4237 /* Stretches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stretches.swift; sourceTree = "<group>"; };
 		7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E95619B361E2EAED0BB6544 /* Monitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Monitor.entitlements; sourceTree = "<group>"; };
 		7FF8748AE7451C1940718DF8 /* DOITApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DOITApp.swift; sourceTree = "<group>"; };
@@ -93,8 +106,12 @@
 		ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C08ABF30980AE21A1823E42E /* Shield.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Shield.entitlements; sourceTree = "<group>"; };
 		C3D1E762EB59BE1BE81591A0 /* ShieldActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldActions.swift; sourceTree = "<group>"; };
+		CE876DD54A6FD98C9F399D52 /* OpensReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpensReport.swift; sourceTree = "<group>"; };
 		D0A2D88D4AF82E0E2DEA0F03 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorningAlarm.swift; sourceTree = "<group>"; };
+		E3890C941D591B4F800FFD84 /* Report.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Report.entitlements; sourceTree = "<group>"; };
+		EA5662C652D639D88AEF8235 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F2FF3A7B64367093DDC140FD /* DOITReport.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DOITReport.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9FCE5AC84C80878B224DF03 /* Monitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -109,6 +126,7 @@
 				0F7DBD5A7A6CBD177448BC99 /* Info.plist */,
 				441780F300B64F621B420563 /* MirrorPhoto.swift */,
 				D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */,
+				74CE821E9B3878A6CA7F4237 /* Stretches.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -146,6 +164,7 @@
 			children = (
 				10E2CD83B346C15AA2810E5D /* App */,
 				3881AEFB7B98AC10474F678F /* Monitor */,
+				6FA324600C71DF42227B223E /* Report */,
 				DCC4CCAB7644942E3C6E2B87 /* Shared */,
 				1735310387F9C4C43CD0FF02 /* Shield */,
 				FA75FA9681F0013F1AEDF33E /* ShieldAction */,
@@ -154,11 +173,22 @@
 			);
 			sourceTree = "<group>";
 		};
+		6FA324600C71DF42227B223E /* Report */ = {
+			isa = PBXGroup;
+			children = (
+				EA5662C652D639D88AEF8235 /* Info.plist */,
+				CE876DD54A6FD98C9F399D52 /* OpensReport.swift */,
+				E3890C941D591B4F800FFD84 /* Report.entitlements */,
+			);
+			path = Report;
+			sourceTree = "<group>";
+		};
 		DB74958A0B9D0620E116DB9A /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				AB0EC15108FA45C51BF7EDE1 /* DOIT.app */,
 				43DA292B1AFCC587FF61D29D /* DOITMonitor.appex */,
+				F2FF3A7B64367093DDC140FD /* DOITReport.appex */,
 				7B77F8FF4AD3EE8F14E027FF /* DOITShield.appex */,
 				ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */,
 				9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */,
@@ -253,6 +283,7 @@
 				EE19CE805482B2F15AE40D5A /* PBXTargetDependency */,
 				A730842781E0FCE60BCA1374 /* PBXTargetDependency */,
 				3D28E80CCAB400D8C314D2C6 /* PBXTargetDependency */,
+				AA11D567B97F709AF5C38516 /* PBXTargetDependency */,
 			);
 			name = DOIT;
 			packageProductDependencies = (
@@ -276,6 +307,23 @@
 			);
 			productName = DOITShieldAction;
 			productReference = ADD2609A4E978D0A0965C448 /* DOITShieldAction.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F79B80C1B1F1AF1F0449F3D6 /* DOITReport */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 52CF7D52D1455AD9C11AE9CF /* Build configuration list for PBXNativeTarget "DOITReport" */;
+			buildPhases = (
+				110B3A39765FB2E473D0F324 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DOITReport;
+			packageProductDependencies = (
+			);
+			productName = DOITReport;
+			productReference = F2FF3A7B64367093DDC140FD /* DOITReport.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -303,6 +351,9 @@
 					E4551F5B7AD627B36369B9F3 = {
 						ProvisioningStyle = Automatic;
 					};
+					F79B80C1B1F1AF1F0449F3D6 = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 55EAB33E465620529BE7C319 /* Build configuration list for PBXProject "DOIT" */;
@@ -324,6 +375,7 @@
 				3248189485E852BBCBD13B1E /* DOITShield */,
 				E4551F5B7AD627B36369B9F3 /* DOITShieldAction */,
 				34E97FAE76EDFFE0F78A8F97 /* DOITUITests */,
+				F79B80C1B1F1AF1F0449F3D6 /* DOITReport */,
 			);
 		};
 /* End PBXProject section */
@@ -349,6 +401,16 @@
 				33FD446A6622948F0DF4EBF9 /* MirrorPhoto.swift in Sources */,
 				40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */,
 				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
+				E3B16BCB23D98D8427A4FF9B /* Stretches.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		110B3A39765FB2E473D0F324 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4990375DA775BA75B569A453 /* OpensReport.swift in Sources */,
+				A51BD9D732B9596F6C61C542 /* Shared.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,6 +467,11 @@
 			target = 3248189485E852BBCBD13B1E /* DOITShield */;
 			targetProxy = D67B032D741D655D6158705C /* PBXContainerItemProxy */;
 		};
+		AA11D567B97F709AF5C38516 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F79B80C1B1F1AF1F0449F3D6 /* DOITReport */;
+			targetProxy = 9FB5FCB9D683FE83537BAA76 /* PBXContainerItemProxy */;
+		};
 		EE19CE805482B2F15AE40D5A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4211ECDDA88683198A255199 /* DOITMonitor */;
@@ -413,6 +480,22 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		11038F26AC82443A76208968 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Report/Report.entitlements;
+				INFOPLIST_FILE = Report/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.report;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		12C025709B9A64881CC03D82 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -704,9 +787,34 @@
 			};
 			name = Release;
 		};
+		FFB6F06BEFDEABBA90C8F92F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Report/Report.entitlements;
+				INFOPLIST_FILE = Report/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.wonderbread4912.doit.report;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		52CF7D52D1455AD9C11AE9CF /* Build configuration list for PBXNativeTarget "DOITReport" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FFB6F06BEFDEABBA90C8F92F /* Debug */,
+				11038F26AC82443A76208968 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		55EAB33E465620529BE7C319 /* Build configuration list for PBXProject "DOIT" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
