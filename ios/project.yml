@@ -25,6 +25,7 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSCameraUsageDescription: DO IT uses the camera so you can take a photo of the sky to prove you went outside.
+        ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: App/DOIT.entitlements
       properties:
