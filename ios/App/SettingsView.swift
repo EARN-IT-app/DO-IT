@@ -4,7 +4,6 @@ import SwiftUI
 
 struct SettingsView: View {
     var change: () -> Void
-    var stretch: () -> Void = {}
     /// true when shown as the Me tab instead of a sheet, so there's no Done button.
     var inTab = false
     @Environment(\.dismiss) private var dismiss
@@ -29,7 +28,6 @@ struct SettingsView: View {
                             }
                         }
                         .padding(.vertical, 6)
-                        Button(action: stretch) { Label("Morning stretches", systemImage: "figure.flexibility") }
                     }
                 }
                 Section("General") {
@@ -124,9 +122,9 @@ struct LayoutView: View {
 
 // Which cards the home screen shows, and in what order. Saved as comma lists.
 enum Layout {
-    static let all = ["focus", "goal", "week", "opens", "bedtime", "alarm"]
+    static let all = ["focus", "stretch", "goal", "week", "opens", "bedtime", "alarm"]
     // Which tab each card lives on.
-    static let todayTab = ["goal"]
+    static let todayTab = ["stretch", "goal"]
     static let focusTab = ["focus", "bedtime", "alarm"]
     static let weekTab = ["week", "opens"]
     struct Tab { let name: String; let cards: [String] }
@@ -147,6 +145,7 @@ enum Layout {
     static func name(_ id: String) -> String {
         switch id {
         case "focus": return "Focus mode"
+        case "stretch": return "Morning stretches"
         case "goal": return "Tomorrow's goal"
         case "opens": return "App checker"
         case "week": return "This week"

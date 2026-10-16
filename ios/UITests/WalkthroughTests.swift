@@ -18,18 +18,16 @@ final class WalkthroughTests: XCTestCase {
         for _ in 0..<8 { app.swipeDown(velocity: .fast) }
         sleep(2)
 
-        // Visit each tab, then open stretches from the Me tab.
-        for tab in ["Focus", "Week", "Me"] {
+        // Visit each tab, then open stretches from the Today tab.
+        for tab in ["Focus", "Week", "Me", "Today"] {
             tap(app.tabBars.buttons[tab])
             sleep(3)
         }
-        tap(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Stretch")).firstMatch)
+        tap(app.buttons["Stretch now"])
         sleep(3)
         tap(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Start stretching")).firstMatch)
         sleep(6)
         tap(app.buttons["Close"])
-        sleep(2)
-        tap(app.tabBars.buttons["Today"])
         sleep(2)
         app.terminate()
 

@@ -228,7 +228,7 @@ struct TodayView: View {
             .tabItem { Label("Week", systemImage: "chart.bar.fill") }
             .tag("Week")
 
-            SettingsView(change: change, stretch: { stretching = true }, inTab: true)
+            SettingsView(change: change, inTab: true)
                 .tabItem { Label("Me", systemImage: "person.fill") }
                 .tag("Me")
         }
@@ -307,12 +307,23 @@ struct TodayView: View {
     @ViewBuilder private func homeCard(_ id: String) -> some View {
         switch id {
         case "focus": focusCard
+        case "stretch": stretchCard
         case "goal": goalCard
         case "opens": opensCard
         case "week": weekCard
         case "bedtime": bedtimeCard
         case "alarm": alarmCard
         default: EmptyView()
+        }
+    }
+
+    private var stretchCard: some View {
+        Card {
+            CardHeader(icon: "figure.flexibility", title: "MORNING STRETCHES")
+            Text("\(stretches.count) easy stretches, 30 seconds each. About 4 minutes to wake up your body.")
+                .foregroundColor(.secondary)
+            Button("Stretch now") { stretching = true }
+                .buttonStyle(BigButton(height: 50))
         }
     }
 
