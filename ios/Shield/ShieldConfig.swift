@@ -46,7 +46,7 @@ class ShieldConfig: ShieldConfigurationDataSource {
             icon: nil,
             title: .init(text: title, color: .white),
             subtitle: .init(
-                text: why + "\n\n\"" + (quotes.randomElement() ?? quotes[0]) + "\"",
+                text: Settings.quotes ? why + "\n\n\"" + (quotes.randomElement() ?? quotes[0]) + "\"" : why,
                 color: UIColor(white: 0.82, alpha: 1)),
             primaryButtonLabel: .init(text: "Open DO IT", color: UIColor.black),
             primaryButtonBackgroundColor: UIColor(red: 0, green: 0.82, blue: 0.42, alpha: 1)

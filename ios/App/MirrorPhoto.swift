@@ -24,7 +24,7 @@ struct AlarmView: View {
                 // The words sit in the middle, breathe and flip forward all the way around.
                 VStack(spacing: 16) {
                     Image(systemName: "alarm.fill").font(.system(size: 96)).foregroundColor(doitGreen)
-                    Text("GOOD MORNING.").font(.system(size: 80, weight: .black)).multilineTextAlignment(.center)
+                    Text(Settings.name.isEmpty ? "GOOD MORNING." : "GOOD MORNING, \(Settings.name.uppercased()).").font(.system(size: 80, weight: .black)).multilineTextAlignment(.center)
                         .minimumScaleFactor(0.5)
                     Text("Get up and take a picture of the sink. The alarm keeps going off until you do.")
                         .font(.system(size: 34, weight: .semibold))

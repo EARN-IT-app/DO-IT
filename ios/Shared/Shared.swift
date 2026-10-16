@@ -186,6 +186,15 @@ enum Homework {
     static func check() { if on { Blocker.shieldOn(.homework) } }
 }
 
+/// General settings, shared with the lock screen.
+enum Settings {
+    static var name: String { shared.string(forKey: "name") ?? "" }
+    static var quotes: Bool {
+        get { shared.object(forKey: "quotes") as? Bool ?? true }
+        set { shared.set(newValue, forKey: "quotes") }
+    }
+}
+
 /// Tomorrow's goal: written the night before, shown on the alarm in the morning.
 enum Goal {
     static func text(_ date: Date) -> String { shared.string(forKey: "goal-\(dayKey(date))") ?? "" }

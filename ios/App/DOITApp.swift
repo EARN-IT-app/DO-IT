@@ -182,6 +182,8 @@ struct TodayView: View {
     @State private var askHomework = false
     @State private var goal = Goal.text(Goal.tomorrow)
     @State private var stretching = false
+    @State private var settings = false
+    @AppStorage("name", store: shared) private var name = ""
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
@@ -203,6 +205,14 @@ struct TodayView: View {
                         .padding(.horizontal, 14).padding(.vertical, 8)
                         .background(Color.white.opacity(0.08)).clipShape(Capsule())
                         .accessibilityLabel("\(Limit.streak) day streak")
+                    Button { settings = true } label: {
+                        Image(systemName: "gearshape.fill").font(.title3).foregroundColor(.white)
+                            .frame(width: 44, height: 44).background(Color.white.opacity(0.08)).clipShape(Circle())
+                    }
+                    .accessibilityLabel("Settings")
+                }
+                if !name.isEmpty {
+                    Text("Hi, \(name). Let's get things done.").font(.headline).foregroundColor(.secondary)
                 }
 
                 todayCard
@@ -246,6 +256,7 @@ struct TodayView: View {
             Text("Your apps lock right now. There's no way to cancel until the time is up.")
         }
         .sheet(isPresented: $stretching) { StretchView() }
+        .sheet(isPresented: $settings) { SettingsView(change: { settings = false; change() }) }
         .alert("Lock your apps until your homework is done?", isPresented: $askHomework) {
             Button("Lock my apps") { startHomework() }
             Button("Not now", role: .cancel) {}
