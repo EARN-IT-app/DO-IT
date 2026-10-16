@@ -21,7 +21,7 @@ struct AlarmView: View {
                 .allowsHitTesting(false)
             VStack(spacing: 16) {
                 Spacer()
-                // The words sit in the middle, breathe and spin all the way around.
+                // The words sit in the middle, breathe and flip forward all the way around.
                 VStack(spacing: 16) {
                     Image(systemName: "alarm.fill").font(.system(size: 48)).foregroundColor(doitGreen)
                     Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
@@ -30,7 +30,7 @@ struct AlarmView: View {
                 }
                 .scaleEffect(breathe ? 1.06 : 1)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: breathe)
-                .rotationEffect(.degrees(breathe ? 360 : 0))
+                .rotation3DEffect(.degrees(breathe ? -360 : 0), axis: (x: 1, y: 0, z: 0), perspective: 0.5)
                 .animation(.easeInOut(duration: 4).repeatForever(autoreverses: false), value: breathe)
                 .onAppear { breathe = true }
                 if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
