@@ -116,6 +116,17 @@ struct OpenMirrorPhoto: LiveActivityIntent {
 
 @available(iOS 26.0, *)
 enum RealAlarms {
+    /// For the video GitHub records: ask for permission, then ring 15 seconds later.
+    static func ringSoon() async {
+        if AlarmManager.shared.authorizationState == .notDetermined {
+            _ = try? await AlarmManager.shared.requestAuthorization()
+        }
+        let t = Date().addingTimeInterval(15)
+        MorningAlarm.hour = Calendar.current.component(.hour, from: t)
+        MorningAlarm.minute = Calendar.current.component(.minute, from: t)
+        _ = await schedule([t])
+    }
+
     /// Returns false if alarms aren't allowed, so notifications are used instead.
     static func schedule(_ times: [Date]) async -> Bool {
         let manager = AlarmManager.shared

@@ -52,5 +52,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ios/screenshots
           git commit -m "Update iPhone app screenshots [skip ci]"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push

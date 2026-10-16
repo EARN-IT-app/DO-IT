@@ -11,12 +11,12 @@ final class AlarmVideoTests: XCTestCase {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         let allow = springboard.buttons["Allow"]
         if allow.waitForExistence(timeout: 15) { allow.tap() }
-        sleep(4)
+        sleep(3)
         XCUIDevice.shared.press(.home)
 
-        // The alarm rings at the start of the next minute (or the one after).
+        // The alarm rings 15 seconds after alarms are allowed.
         let button = springboard.buttons["Mirror photo"]
-        XCTAssertTrue(button.waitForExistence(timeout: 120), "The alarm didn't go off")
+        XCTAssertTrue(button.waitForExistence(timeout: 60), "The alarm didn't go off")
         sleep(6)
         button.tap()
         sleep(15)

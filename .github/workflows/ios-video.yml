@@ -23,9 +23,9 @@ jobs:
         run: |
           brew install xcodegen ffmpeg
           cd ios && xcodegen generate
-          xcodebuild -project DOIT.xcodeproj -scheme DOIT -sdk iphonesimulator \
+          xcodebuild build-for-testing -project DOIT.xcodeproj -scheme DOIT \
             -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO build | tail -5
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO | tail -5
       - name: Record the video
         run: |
           cd ios
@@ -41,8 +41,8 @@ jobs:
           REC=$!
           sleep 3
           # The test opens DO IT, allows alarms, waits for the alarm and taps its button.
-          xcodebuild test -project DOIT.xcodeproj -scheme DOIT -destination "id=$DEVICE" \
-            -derivedDataPath build CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO | tail -30 || true
+          xcodebuild test-without-building -project DOIT.xcodeproj -scheme DOIT -destination "id=$DEVICE" \
+            -derivedDataPath build | grep -E "Test Case|error|failed|passed|XCTAssert" || true
           kill -INT $REC; wait $REC || true
           # Smaller file that plays everywhere.
           ffmpeg -y -i raw.mp4 -vf "scale=590:-2,fps=30" -c:v libx264 -pix_fmt yuv420p -crf 28 -movflags +faststart -an screenshots/demo.mp4
@@ -53,5 +53,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ios/screenshots
           git commit -m "Update iPhone app video [skip ci]"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push

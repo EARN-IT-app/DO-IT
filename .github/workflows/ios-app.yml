@@ -39,5 +39,5 @@ jobs:
           git add ios
           git diff --cached --quiet || git commit -m "Update the Xcode project [skip ci]"
           # Another change may have landed while this was building.
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push
