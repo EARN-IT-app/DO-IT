@@ -37,7 +37,9 @@ struct StopView: View {
                         .minimumScaleFactor(0.5)
                         .padding(40)
                 }
-                .frame(width: 320, height: 320)
+                .frame(maxWidth: 320)
+                .aspectRatio(1, contentMode: .fit)
+                .padding(.horizontal, 24)
                 .scaleEffect(shown ? 1 : 0.4)
                 .rotationEffect(.degrees(shown ? 0 : -20))
                 .accessibilityElement(children: .ignore)

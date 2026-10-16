@@ -68,7 +68,7 @@ struct RootView: View {
             ringing = MorningAlarm.ringing
             homework = Homework.on
             if setUpDone { Limit.checkDay() }
-            stop = Limit.lockedToday
+            stop = Limit.lockedToday || CommandLine.arguments.contains("-demoStop")
             if !CommandLine.arguments.contains("-demo") {
                 Task { await MorningAlarm.reschedule() } // top up the next few days
             }
