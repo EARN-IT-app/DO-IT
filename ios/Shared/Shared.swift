@@ -188,9 +188,9 @@ enum Homework {
 
 /// Tomorrow's goal: written the night before, shown on the alarm in the morning.
 enum Goal {
-    static func get(_ date: Date) -> String { shared.string(forKey: "goal-\(dayKey(date))") ?? "" }
-    static func set(_ text: String, _ date: Date) { shared.set(text, forKey: "goal-\(dayKey(date))") }
-    static var today: String { get(Date()) }
+    static func text(_ date: Date) -> String { shared.string(forKey: "goal-\(dayKey(date))") ?? "" }
+    static func save(_ text: String, _ date: Date) { shared.set(text, forKey: "goal-\(dayKey(date))") }
+    static var today: String { text(Date()) }
     static var tomorrow: Date { Date().addingTimeInterval(86400) }
 }
 

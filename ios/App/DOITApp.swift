@@ -179,7 +179,7 @@ struct TodayView: View {
     var change: () -> Void
     var startHomework: () -> Void
     @State private var askHomework = false
-    @State private var goal = Goal.get(Goal.tomorrow)
+    @State private var goal = Goal.text(Goal.tomorrow)
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
@@ -270,7 +270,7 @@ struct TodayView: View {
             Text("What do you want to get done tomorrow?").font(.headline)
             TextField("Finish my essay", text: $goal)
                 .textFieldStyle(.roundedBorder)
-                .onChange(of: goal) { Goal.set($0.trimmingCharacters(in: .whitespaces), Goal.tomorrow) }
+                .onChange(of: goal) { Goal.save($0.trimmingCharacters(in: .whitespaces), Goal.tomorrow) }
             Text("It shows up on your alarm in the morning.").font(.footnote).foregroundColor(.secondary)
         }
     }
