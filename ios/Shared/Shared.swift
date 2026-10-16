@@ -170,20 +170,18 @@ enum Limit {
         else if lockedToday { Blocker.shieldOn(.limit) }
         Focus.check()
         Bedtime.refresh()
-        Homework.check()
+        Homework.clear()
     }
 }
 
-/// Homework lock: the apps stay blocked until a picture of finished homework is taken in DO IT.
+/// The homework lock was taken out (the photo check let any picture through).
+/// This only unlocks anyone who was still in one from an older version.
 enum Homework {
-    static var on: Bool {
-        get { shared.bool(forKey: "homeworkOn") }
-        set { shared.set(newValue, forKey: "homeworkOn") }
+    static func clear() {
+        guard shared.bool(forKey: "homeworkOn") else { return }
+        shared.set(false, forKey: "homeworkOn")
+        Blocker.shieldOff(.homework)
     }
-
-    static func start() { on = true; Blocker.shieldOn(.homework) }
-    static func finish() { on = false; Blocker.shieldOff(.homework) }
-    static func check() { if on { Blocker.shieldOn(.homework) } }
 }
 
 /// General settings, shared with the lock screen.

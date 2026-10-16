@@ -40,7 +40,6 @@ struct RootView: View {
     @AppStorage("setUpDone") private var setUpDone = false
     @State private var changing = false
     @State private var ringing = MorningAlarm.ringing
-    @State private var homework = Homework.on
     // Shown each time DO IT opens after the day's time is used up.
     @State private var stop = Limit.lockedToday || CommandLine.arguments.contains("-demoStop")
 
@@ -52,10 +51,8 @@ struct RootView: View {
                 StopView { stop = false }
             } else if !setUpDone {
                 SetupView { setUpDone = true }
-            } else if homework {
-                HomeworkView { homework = false }
             } else {
-                TodayView(change: { changing = true }, startHomework: { Homework.start(); homework = true })
+                TodayView(change: { changing = true })
             }
         }
         .sheet(isPresented: $changing) { ChangeView() }
@@ -66,7 +63,6 @@ struct RootView: View {
         .onChange(of: phase) { now in
             guard now == .active else { return }
             ringing = MorningAlarm.ringing
-            homework = Homework.on
             if setUpDone { Limit.checkDay() }
             stop = Limit.lockedToday || CommandLine.arguments.contains("-demoStop")
             if !CommandLine.arguments.contains("-demo") {
@@ -183,8 +179,6 @@ func clock(_ seconds: Int) -> String {
 
 struct TodayView: View {
     var change: () -> Void
-    var startHomework: () -> Void
-    @State private var askHomework = false
     @State private var goal = Goal.text(Goal.tomorrow)
     @State private var stretching = false
     @State private var settings = false
@@ -272,12 +266,6 @@ struct TodayView: View {
         .sheet(isPresented: $settings, onDismiss: {
             if changeAfterSettings { changeAfterSettings = false; change() }
         }) { SettingsView(change: { changeAfterSettings = true; settings = false }) }
-        .alert("Lock your apps until your homework is done?", isPresented: $askHomework) {
-            Button("Lock my apps") { startHomework() }
-            Button("Not now", role: .cancel) {}
-        } message: {
-            Text("You can only unlock them with a picture of your finished homework.")
-        }
         .alert(problem ?? "", isPresented: Binding(get: { problem != nil }, set: { if !$0 { problem = nil } })) {
             Button("OK", role: .cancel) {}
         }
@@ -288,24 +276,12 @@ struct TodayView: View {
     @ViewBuilder private func homeCard(_ id: String) -> some View {
         switch id {
         case "focus": focusCard
-        case "homework": homeworkCard
         case "goal": goalCard
         case "opens": opensCard
         case "week": weekCard
         case "bedtime": bedtimeCard
         case "alarm": alarmCard
         default: EmptyView()
-        }
-    }
-
-    private var homeworkCard: some View {
-        Card {
-            Text("HOMEWORK LOCK").font(.caption.bold()).foregroundColor(doitGreen)
-            Text("Locks your apps until you take a picture of your finished homework.").foregroundColor(.secondary)
-            Button { askHomework = true } label: {
-                Text("Start homework lock").bold().frame(maxWidth: .infinity, minHeight: 50)
-            }
-            .buttonStyle(.borderedProminent).foregroundColor(.black)
         }
     }
 

@@ -95,7 +95,7 @@ struct LayoutView: View {
 
 // Which cards the home screen shows, and in what order. Saved as comma lists.
 enum Layout {
-    static let all = ["focus", "homework", "goal", "opens", "week", "bedtime", "alarm"]
+    static let all = ["focus", "goal", "opens", "week", "bedtime", "alarm"]
 
     static func list(_ saved: String) -> [String] { saved.split(separator: ",").map(String.init) }
 
@@ -112,7 +112,6 @@ enum Layout {
     static func name(_ id: String) -> String {
         switch id {
         case "focus": return "Focus mode"
-        case "homework": return "Homework lock"
         case "goal": return "Tomorrow's goal"
         case "opens": return "App checker"
         case "week": return "This week"
