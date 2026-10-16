@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>DO IT</title>
-<meta name="description" content="Set a daily time limit on the apps that eat your day. When the time is gone, they stay locked until tomorrow.">
+<meta name="description" content="30 minutes a day on the apps that eat your day, focus mode, a bedtime lock and a streak.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="DO IT">
 <meta name="theme-color" content="#000000">
@@ -105,12 +105,32 @@ select {
   .pop { animation: pop .35s ease-out; }
   @keyframes pop { from { transform: scale(.96); opacity: .4; } to { transform: none; opacity: 1; } }
 }
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--good); font-weight: 700; white-space: nowrap; }
+.today { display: flex; align-items: center; gap: 20px; }
+.ring { flex: none; width: 110px; height: 110px; }
+.ring .bg { stroke: var(--line); }
+.ring .fg { stroke: var(--good); transition: stroke-dashoffset .4s; }
+.ring text { fill: var(--fg); font: 400 30px var(--display); }
+.chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.chips .btn { min-height: 52px; font-size: 17px; }
+.switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; }
+.switch input { appearance: none; -webkit-appearance: none; flex: none; width: 56px; height: 32px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: background .2s; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch input:checked { background: var(--good); }
+.switch input:checked::after { transform: translateX(24px); }
+.switch input:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+.quote { margin: 0; padding-left: 14px; border-left: 3px solid var(--good); font-style: italic; color: var(--fg); }
+.timer.go { color: var(--good); }
 </style>
 </head>
 <body>
 <main>
-  <h1><span>DO</span><br><span>IT</span></h1>
-  <p class="lede">You get 30 minutes a day on your apps, and that can't be changed. When today's time is used up, they stay locked until tomorrow.</p>
+  <div class="top">
+    <h1><span>DO</span><br><span>IT</span></h1>
+    <span class="pill" id="streak" aria-label="Streak">🔥 0 days</span>
+  </div>
+  <p class="lede">You get 30 minutes a day on your apps. When it's used up, they stay locked until tomorrow.</p>
 
   <section class="card quick" id="quick">
     <p class="eyebrow">Block your apps</p>
@@ -121,8 +141,18 @@ select {
   </section>
 
   <section class="card" id="go">
-    <p class="eyebrow">Time left today</p>
-    <p class="big" id="todayLeft">30 minutes</p>
+    <p class="eyebrow">Today</p>
+    <div class="today">
+      <svg class="ring" viewBox="0 0 110 110" aria-hidden="true">
+        <circle class="bg" cx="55" cy="55" r="46" fill="none" stroke-width="12"/>
+        <circle class="fg" id="ringFg" cx="55" cy="55" r="46" fill="none" stroke-width="12" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+        <text id="ringNum" x="55" y="66" text-anchor="middle">30</text>
+      </svg>
+      <div>
+        <p class="task" id="todayLeft">30 min left</p>
+        <p class="note">Out of 30 minutes today.</p>
+      </div>
+    </div>
     <label for="minutes">How long do you need right now?</label>
     <select id="minutes"></select>
     <button class="btn" id="start" type="button">Start</button>
@@ -130,16 +160,39 @@ select {
 
   <section class="card pop" id="running" hidden>
     <p class="eyebrow">You're in</p>
-    <p class="timer" id="clock">10:00</p>
+    <p class="timer go" id="clock">10:00</p>
     <p class="note" id="runNote"></p>
     <button class="btn ghost" id="doneEarly" type="button">I'm done, lock it again</button>
   </section>
 
-  <section class="card pop" id="locked" hidden>
-    <p class="eyebrow">Done for today</p>
-    <p class="task">You used all your time. Your apps are locked until tomorrow.</p>
-    <p class="timer up" id="lockClock">0:00:00</p>
-    <p class="note">That's how long until they unlock. Go do the thing you've been putting off.</p>
+  <section class="card pop" id="blocked" hidden>
+    <p class="eyebrow" id="blockedWhy">Done for today</p>
+    <p class="task" id="blockedTitle">You used all your time.</p>
+    <p class="timer up" id="blockedClock">0:00:00</p>
+    <p class="note" id="blockedNote"></p>
+    <p class="quote" id="quote"></p>
+  </section>
+
+  <section class="card" id="focusCard">
+    <p class="eyebrow">Focus mode</p>
+    <p class="body">Lock your apps right now. Once it starts, it can't be stopped.</p>
+    <div class="chips">
+      <button class="btn" type="button" data-focus="15">15m</button>
+      <button class="btn" type="button" data-focus="30">30m</button>
+      <button class="btn" type="button" data-focus="60">1h</button>
+      <button class="btn" type="button" data-focus="120">2h</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <label class="switch">
+      <span>
+        <span class="eyebrow" style="display:block">Bedtime lock</span>
+        <span class="body">Locks your apps every night from 10 PM to 7 AM.</span>
+      </span>
+      <input type="checkbox" id="bedtime" role="switch">
+    </label>
+    <p class="note" id="bedtimeNote" hidden></p>
   </section>
 
   <section class="card" id="setup">
@@ -155,13 +208,29 @@ select {
     <a class="btn" href="shortcuts://">Open Shortcuts</a>
     <p class="addr" id="addr"></p>
     <button class="btn ghost" id="copy" type="button">Copy the DO IT address</button>
-    <p class="note">Now whenever you open one of those apps, DO IT opens first and takes the time from today's allowance.</p>
+    <p class="note">Now whenever you open one of those apps, DO IT opens first and takes the time from today's 30 minutes.</p>
   </section>
 </main>
 <script>
-// DO IT: a daily time allowance for distracting apps. Each visit takes time out
-// of today's allowance. Once it's used up, DO IT stays locked until midnight.
+// DO IT: 30 minutes a day on distracting apps, plus focus mode, a bedtime lock and a streak.
+// Each visit takes time out of today's 30 minutes. Once it's used up, DO IT stays locked until midnight.
 const SESSION_KEY = "doit-break-end";
+const FOCUS_KEY = "doit-focus-end";
+const BEDTIME_KEY = "doit-bedtime";
+const DAILY_LIMIT = 30; // fixed, so it can't be raised to get more time
+const BED_START = 22, BED_END = 7;
+const QUOTES = [
+  "Don't let your dreams be dreams. Just do it.",
+  "You don't need more time. You need to start.",
+  "The phone will still be here later. This moment won't.",
+  "Small steps every day add up.",
+  "Done is better than perfect.",
+  "Future you is watching. Make them proud.",
+  "Discipline is choosing what you want most over what you want now.",
+  "Start before you feel ready.",
+  "You've scrolled enough today. Go build something.",
+  "One hour of focus beats a day of distraction.",
+];
 // Opened inside the Android app (?from=android): that app does the blocking,
 // so the iPhone Shortcuts help is hidden and the time is handed to the app.
 const FROM = new URLSearchParams(location.search).get("from");
@@ -181,26 +250,58 @@ if (store.get("doit-hide-quick") === "1") $("quick").hidden = true;
 $("hideQuick").onclick = () => { $("quick").hidden = true; store.set("doit-hide-quick", "1"); };
 $("addr").textContent = ADDRESS;
 
-// The daily limit is fixed, so it can't be raised to get more time.
-const DAILY_LIMIT = 30;
-const dayKey = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
-const todayLimit = () => DAILY_LIMIT;
-const usedMs = () => Number(store.get("doit-used-" + dayKey()) || 0);
-const leftMs = () => Math.max(0, todayLimit() * 60000 - usedMs());
+const dayKey = (d = new Date()) => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+const usedOn = (key) => Number(store.get("doit-used-" + key) || 0);
+const usedMs = () => usedOn(dayKey());
+const leftMs = () => Math.max(0, DAILY_LIMIT * 60000 - usedMs());
 const fmtMin = (ms) => { const m = Math.ceil(ms / 60000); return m + (m === 1 ? " minute" : " minutes"); };
+const clockText = (ms) => {
+  const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0");
+};
+const isNight = () => { const h = new Date().getHours(); return h >= BED_START || h < BED_END; };
+const bedtimeOn = () => store.get(BEDTIME_KEY) === "1";
+const focusEnd = () => Number(store.get(FOCUS_KEY) || 0);
+
+// The streak: days in a row, before today, that stayed under 30 minutes.
+if (!store.get("doit-first-day")) store.set("doit-first-day", String(new Date().setHours(0, 0, 0, 0)));
+function streak() {
+  const first = Number(store.get("doit-first-day"));
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  let n = 0;
+  for (let i = 0; i < 3650; i++) {
+    d.setDate(d.getDate() - 1);
+    if (d.getTime() < first || usedOn(dayKey(d)) >= DAILY_LIMIT * 60000) break;
+    n++;
+  }
+  return n;
+}
+function showStreak() {
+  const n = streak();
+  $("streak").textContent = "🔥 " + n + (n === 1 ? " day" : " days");
+  $("streak").setAttribute("aria-label", n + " day streak");
+}
 
 let timerId = null;
+function only(id) {
+  clearInterval(timerId);
+  for (const c of ["go", "running", "blocked"]) $(c).hidden = c !== id;
+  // Focus mode can't be started on top of another lock.
+  $("focusCard").hidden = id === "blocked";
+  showStreak();
+}
 
 function showGo() {
-  clearInterval(timerId);
-  $("running").hidden = true;
-  $("locked").hidden = true;
-  $("go").hidden = false;
+  only("go");
   const left = leftMs();
-  $("todayLeft").textContent = fmtMin(left);
-  // Offer chunks up to what's left today.
   const leftMin = Math.ceil(left / 60000);
-  const choices = [5, 10, 15, 30].filter((m) => m < leftMin);
+  $("todayLeft").textContent = leftMin + " min left";
+  $("ringNum").textContent = leftMin;
+  const c = 2 * Math.PI * 46;
+  $("ringFg").style.strokeDasharray = c;
+  $("ringFg").style.strokeDashoffset = c * (1 - left / (DAILY_LIMIT * 60000));
+  // Offer chunks up to what's left today.
+  const choices = [5, 10, 15].filter((m) => m < leftMin);
   choices.push(leftMin);
   const remembered = Number(store.get("doit-minutes") || 10);
   $("minutes").innerHTML = choices.map((m) =>
@@ -211,7 +312,7 @@ $("minutes").onchange = (e) => store.set("doit-minutes", e.target.value);
 
 $("start").onclick = () => {
   const len = Math.min(Number($("minutes").value) * 60000, leftMs());
-  if (len <= 0) return showLocked();
+  if (len <= 0) return resume();
   store.set("doit-used-" + dayKey(), String(usedMs() + len));
   const end = Date.now() + len;
   store.set(SESSION_KEY, String(end));
@@ -222,17 +323,14 @@ $("start").onclick = () => {
 
 // Stopping early gives back the unused time.
 $("doneEarly").onclick = () => {
-  const end = Number(store.get(SESSION_KEY) || 0);
-  const unused = Math.max(0, end - Date.now());
+  const unused = Math.max(0, Number(store.get(SESSION_KEY) || 0) - Date.now());
   store.set("doit-used-" + dayKey(), String(Math.max(0, usedMs() - unused)));
   store.set(SESSION_KEY, "0");
   resume();
 };
 
 function showRunning(end) {
-  $("go").hidden = true;
-  $("locked").hidden = true;
-  $("running").hidden = false;
+  only("running");
   $("doneEarly").hidden = false;
   const clock = $("clock");
   clock.classList.remove("up");
@@ -241,8 +339,7 @@ function showRunning(end) {
     (after > 0 ? "After this you'll have " + fmtMin(after) + " left today." : "This is your last time today.");
   const tick = () => {
     const left = Math.max(0, end - Date.now());
-    const m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
-    clock.textContent = m + ":" + String(s).padStart(2, "0");
+    clock.textContent = clockText(left);
     if (left === 0) {
       clearInterval(timerId);
       store.set(SESSION_KEY, "0");
@@ -254,33 +351,69 @@ function showRunning(end) {
         : "That was all your time for today. Your apps stay locked until tomorrow.";
     }
   };
-  clearInterval(timerId);
   tick();
   timerId = setInterval(tick, 1000);
 }
 
-function showLocked() {
-  clearInterval(timerId);
-  $("go").hidden = true;
-  $("running").hidden = true;
-  $("locked").hidden = false;
+// One locked screen for all three reasons: focus mode, bedtime, or today's time used up.
+function showBlocked(why, title, note, until, color) {
+  only("blocked");
+  $("blockedWhy").textContent = why;
+  $("blockedTitle").textContent = title;
+  $("blockedNote").textContent = note;
+  $("blockedClock").className = "timer " + color;
+  $("quote").textContent = "“" + QUOTES[Math.floor(Math.random() * QUOTES.length)] + "”";
   const tick = () => {
-    const midnight = new Date(); midnight.setHours(24, 0, 0, 0);
-    const left = Math.max(0, midnight - Date.now());
-    const h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
-    $("lockClock").textContent = h + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
-    if (leftMs() > 0) showGo(); // a new day started
+    const left = Math.max(0, until() - Date.now());
+    $("blockedClock").textContent = clockText(left);
+    if (left === 0) resume();
   };
   tick();
   timerId = setInterval(tick, 1000);
 }
 
+document.querySelectorAll("[data-focus]").forEach((b) => {
+  b.onclick = () => {
+    const m = Number(b.dataset.focus);
+    if (!confirm("Focus for " + (m < 60 ? m + " minutes" : m / 60 + (m === 60 ? " hour" : " hours")) +
+      "?\n\nYour apps lock right now. There's no way to cancel until the time is up.")) return;
+    store.set(SESSION_KEY, "0");
+    store.set(FOCUS_KEY, String(Date.now() + m * 60000));
+    resume();
+  };
+});
+
+// Bedtime lock can only be turned off during the day.
+$("bedtime").checked = bedtimeOn();
+$("bedtime").onchange = (e) => {
+  if (!e.target.checked && isNight()) {
+    e.target.checked = true;
+    $("bedtimeNote").hidden = false;
+    $("bedtimeNote").textContent = "Bedtime lock can only be turned off during the day.";
+    return;
+  }
+  $("bedtimeNote").hidden = true;
+  store.set(BEDTIME_KEY, e.target.checked ? "1" : "0");
+  resume();
+};
+
 // Decide what to show whenever DO IT is opened or brought back on screen.
 function resume() {
-  const end = Number(store.get(SESSION_KEY) || 0);
-  if (end > Date.now()) showRunning(end);
-  else if (leftMs() <= 0) showLocked();
-  else showGo();
+  const session = Number(store.get(SESSION_KEY) || 0);
+  if (focusEnd() > Date.now()) {
+    const t = new Date(focusEnd()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    showBlocked("Focus mode", "Your apps are locked. Go get it done.", "Unlocks at " + t + ".", focusEnd, "go");
+  } else if (bedtimeOn() && isNight()) {
+    const until = () => { const d = new Date(); if (d.getHours() >= BED_START) d.setDate(d.getDate() + 1); d.setHours(BED_END, 0, 0, 0); return d.getTime(); };
+    showBlocked("Bedtime", "Put the phone down and sleep.", "Your apps unlock at 7 AM.", until, "up");
+  } else if (session > Date.now()) {
+    showRunning(session);
+  } else if (leftMs() <= 0) {
+    const midnight = () => { const d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); };
+    showBlocked("Done for today", "You used all your time.", "That's how long until your apps unlock. Go do the thing you've been putting off.", midnight, "up");
+  } else {
+    showGo();
+  }
 }
 resume();
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
