@@ -552,6 +552,8 @@ let timerId = null;
 function only(id) {
   clearInterval(timerId);
   for (const c of ["go", "running", "blocked", "ringing"]) $(c).hidden = c !== id;
+  // A lock, a running break or the alarm always shows on the Today tab.
+  if (id !== "go" && document.body.dataset.tab !== "today") showTab("today");
   // Focus mode can't be started on top of another lock.
   const locked = id === "blocked" || id === "ringing";
   $("focusCard").hidden = locked;
