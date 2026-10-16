@@ -122,6 +122,10 @@ select {
 .switch input:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 .quote { margin: 0; padding-left: 14px; border-left: 3px solid var(--good); font-style: italic; color: var(--fg); }
 .timer.go { color: var(--good); }
+.timein { width: 100%; min-height: 54px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--fg); font: 700 22px var(--body); padding: 0 12px; margin-top: 8px; }
+#alarmSet { display: flex; flex-direction: column; gap: 8px; }
+#alarmSet[hidden] { display: none; }
+#mirrorPreview { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; }
 </style>
 </head>
 <body>
@@ -165,6 +169,16 @@ select {
     <button class="btn ghost" id="doneEarly" type="button">I'm done, lock it again</button>
   </section>
 
+  <section class="card pop" id="ringing" hidden>
+    <p class="eyebrow">Morning alarm</p>
+    <p class="task">GOOD MORNING. Get up, go to the mirror, and take a photo of yourself.</p>
+    <p class="note">The alarm keeps going until you do.</p>
+    <input type="file" id="mirrorPhoto" accept="image/*" capture="environment" hidden>
+    <button class="btn" id="mirrorBtn" type="button">Open camera</button>
+    <img id="mirrorPreview" alt="Your mirror photo" hidden>
+    <p class="verdict" id="mirrorVerdict" hidden></p>
+  </section>
+
   <section class="card pop" id="blocked" hidden>
     <p class="eyebrow" id="blockedWhy">Done for today</p>
     <p class="task" id="blockedTitle">You used all your time.</p>
@@ -193,6 +207,22 @@ select {
       <input type="checkbox" id="bedtime" role="switch">
     </label>
     <p class="note" id="bedtimeNote" hidden></p>
+  </section>
+
+  <section class="card" id="alarmCard">
+    <label class="switch">
+      <span>
+        <span class="eyebrow" style="display:block">Morning alarm</span>
+        <span class="body">Keeps going off until you take a photo of yourself in the mirror.</span>
+      </span>
+      <input type="checkbox" id="alarmOn" role="switch">
+    </label>
+    <div id="alarmSet" hidden>
+      <label for="alarmTime">Wake up at</label>
+      <input type="time" id="alarmTime" value="07:00" class="timein">
+      <p class="note">On the website, the alarm only works if you leave DO IT open with your phone plugged in and the sound up. The iPhone app will have a real alarm that works even when it's closed.</p>
+    </div>
+    <p class="note" id="alarmNote" hidden></p>
   </section>
 
   <section class="card" id="setup">
@@ -285,9 +315,10 @@ function showStreak() {
 let timerId = null;
 function only(id) {
   clearInterval(timerId);
-  for (const c of ["go", "running", "blocked"]) $(c).hidden = c !== id;
+  for (const c of ["go", "running", "blocked", "ringing"]) $(c).hidden = c !== id;
   // Focus mode can't be started on top of another lock.
-  $("focusCard").hidden = id === "blocked";
+  $("focusCard").hidden = id === "blocked" || id === "ringing";
+  if (id !== "ringing") stopBeeping();
   showStreak();
 }
 
@@ -397,10 +428,105 @@ $("bedtime").onchange = (e) => {
   resume();
 };
 
+// The morning alarm. It rings for half an hour from the set time,
+// and only stops once a photo with a person in it is taken.
+const ALARM_MINUTES = 30;
+const alarmOn = () => store.get("doit-alarm") === "1";
+const alarmStart = () => {
+  const [h, m] = (store.get("doit-alarm-time") || "07:00").split(":").map(Number);
+  const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime();
+};
+const alarmRinging = () => alarmOn() && store.get("doit-alarm-done") !== dayKey() &&
+  Date.now() >= alarmStart() && Date.now() < alarmStart() + ALARM_MINUTES * 60000;
+
+$("alarmOn").checked = alarmOn();
+$("alarmTime").value = store.get("doit-alarm-time") || "07:00";
+$("alarmSet").hidden = !alarmOn();
+let audio = null, beepId = null, wakeLock = null;
+async function keepAwake() {
+  try { if (alarmOn() && "wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch {}
+}
+$("alarmOn").onchange = (e) => {
+  if (!e.target.checked && alarmRinging()) {
+    e.target.checked = true;
+    $("alarmNote").hidden = false;
+    $("alarmNote").textContent = "The alarm can't be turned off while it's going off. Take the mirror photo.";
+    return;
+  }
+  $("alarmNote").hidden = true;
+  store.set("doit-alarm", e.target.checked ? "1" : "0");
+  $("alarmSet").hidden = !e.target.checked;
+  // iPhones only allow sound after a tap, so the tap that turns the alarm on unlocks it.
+  if (e.target.checked && !audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {} }
+  keepAwake();
+};
+$("alarmTime").onchange = (e) => store.set("doit-alarm-time", e.target.value || "07:00");
+
+function beep() {
+  if (!audio) return;
+  audio.resume();
+  const now = audio.currentTime;
+  for (let i = 0; i < 3; i++) {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "square"; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, now + i * 0.25);
+    g.gain.exponentialRampToValueAtTime(0.6, now + i * 0.25 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.25 + 0.18);
+    o.connect(g).connect(audio.destination);
+    o.start(now + i * 0.25); o.stop(now + i * 0.25 + 0.2);
+  }
+}
+function stopBeeping() { clearInterval(beepId); beepId = null; }
+
+function showRinging() {
+  only("ringing");
+  if (!beepId) { beep(); beepId = setInterval(beep, 1200); }
+  if (navigator.vibrate) navigator.vibrate([400, 200, 400]);
+}
+
+// The photo check runs on the phone: it loads a small picture checker the first time.
+let detector = null;
+function loadScript(src) {
+  return new Promise((ok, bad) => { const t = document.createElement("script"); t.src = src; t.onload = ok; t.onerror = bad; document.head.appendChild(t); });
+}
+async function getDetector() {
+  if (!detector) detector = (async () => {
+    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
+    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js");
+    return cocoSsd.load({ base: "lite_mobilenet_v2" });
+  })().catch(() => { detector = null; return null; });
+  return detector;
+}
+$("mirrorBtn").onclick = () => { $("mirrorPhoto").value = ""; $("mirrorPhoto").click(); getDetector(); };
+$("mirrorPhoto").onchange = async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const v = $("mirrorVerdict");
+  v.hidden = false; v.className = "verdict"; v.textContent = "Checking...";
+  const img = $("mirrorPreview");
+  img.src = URL.createObjectURL(file);
+  img.hidden = false;
+  await img.decode().catch(() => {});
+  const model = await getDetector();
+  if (!model) { v.className = "verdict fail"; v.textContent = "The photo checker didn't load. Check your internet and try again."; return; }
+  const found = (await model.detect(img)).some((p) => p.class === "person" && p.score > 0.5);
+  if (found) {
+    store.set("doit-alarm-done", dayKey());
+    v.className = "verdict pass"; v.textContent = "You're up. Good morning!";
+    stopBeeping();
+    setTimeout(() => { img.hidden = true; v.hidden = true; resume(); }, 1500);
+  } else {
+    v.className = "verdict fail"; v.textContent = "I couldn't see you in that photo. Stand in front of the mirror with good light and try again.";
+  }
+};
+
 // Decide what to show whenever DO IT is opened or brought back on screen.
 function resume() {
   const session = Number(store.get(SESSION_KEY) || 0);
-  if (focusEnd() > Date.now()) {
+  keepAwake();
+  if (alarmRinging()) {
+    showRinging();
+  } else if (focusEnd() > Date.now()) {
     const t = new Date(focusEnd()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     showBlocked("Focus mode", "Your apps are locked. Go get it done.", "Unlocks at " + t + ".", focusEnd, "go");
   } else if (bedtimeOn() && isNight()) {
@@ -416,6 +542,8 @@ function resume() {
   }
 }
 resume();
+// Check every few seconds whether the alarm should go off.
+setInterval(() => { if (alarmRinging() && $("ringing").hidden) resume(); }, 5000);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") resume(); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) resume(); });
 
