@@ -183,6 +183,7 @@ struct TodayView: View {
     @State private var goal = Goal.text(Goal.tomorrow)
     @State private var stretching = false
     @State private var settings = false
+    @State private var changeAfterSettings = false
     @AppStorage("name", store: shared) private var name = ""
     @State private var now = Date()
     @State private var askFocus: Int?
@@ -256,7 +257,10 @@ struct TodayView: View {
             Text("Your apps lock right now. There's no way to cancel until the time is up.")
         }
         .sheet(isPresented: $stretching) { StretchView() }
-        .sheet(isPresented: $settings) { SettingsView(change: { settings = false; change() }) }
+        // Open the app picker only after Settings has closed, or iPhone won't show it.
+        .sheet(isPresented: $settings, onDismiss: {
+            if changeAfterSettings { changeAfterSettings = false; change() }
+        }) { SettingsView(change: { changeAfterSettings = true; settings = false }) }
         .alert("Lock your apps until your homework is done?", isPresented: $askHomework) {
             Button("Lock my apps") { startHomework() }
             Button("Not now", role: .cancel) {}
@@ -296,7 +300,7 @@ struct TodayView: View {
     private var opensCard: some View {
         Card {
             Text("APP CHECKER").font(.caption.bold()).foregroundColor(doitGreen)
-            Text("How many times you opened each app today.").foregroundColor(.secondary)
+            Text("How many times you picked up your phone to use each app today.").foregroundColor(.secondary)
             DeviceActivityReport(.opens, filter: DeviceActivityFilter(
                 segment: .daily(during: DateInterval(start: Calendar.current.startOfDay(for: Date()), end: Date()))))
                 .frame(height: 320)
