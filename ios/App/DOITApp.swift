@@ -3,6 +3,7 @@
 // and a block screen with a quote. Screen Time does the counting and blocking.
 import SwiftUI
 import FamilyControls
+import DeviceActivity
 import UserNotifications
 
 @main
@@ -180,6 +181,7 @@ struct TodayView: View {
     var startHomework: () -> Void
     @State private var askHomework = false
     @State private var goal = Goal.text(Goal.tomorrow)
+    @State private var stretching = false
     @State private var now = Date()
     @State private var askFocus: Int?
     @State private var problem: String?
@@ -205,14 +207,16 @@ struct TodayView: View {
 
                 todayCard
                 // Shortcuts under the ring: each jumps to its settings below.
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     chip("scope", "Focus", Focus.active ? "On now" : "Lock now") { withAnimation { scroll.scrollTo("focus", anchor: .center) } }
                     chip("moon.fill", "Bedtime", bedtime ? "On · 10 PM" : "Off") { withAnimation { scroll.scrollTo("bedtime", anchor: .center) } }
                     chip("alarm.fill", "Alarm", alarmOn ? alarmTime.formatted(date: .omitted, time: .shortened) : "Off") { withAnimation { scroll.scrollTo("alarm", anchor: .center) } }
+                    chip("figure.flexibility", "Stretch", "Morning") { stretching = true }
                 }
                 focusCard.id("focus")
                 homeworkCard
                 goalCard
+                opensCard
                 weekCard
                 bedtimeCard.id("bedtime")
                 alarmCard.id("alarm")
@@ -241,6 +245,7 @@ struct TodayView: View {
         } message: {
             Text("Your apps lock right now. There's no way to cancel until the time is up.")
         }
+        .sheet(isPresented: $stretching) { StretchView() }
         .alert("Lock your apps until your homework is done?", isPresented: $askHomework) {
             Button("Lock my apps") { startHomework() }
             Button("Not now", role: .cancel) {}
@@ -272,6 +277,18 @@ struct TodayView: View {
                 .textFieldStyle(.roundedBorder)
                 .onChange(of: goal) { Goal.save($0.trimmingCharacters(in: .whitespaces), Goal.tomorrow) }
             Text("It shows up on your alarm in the morning.").font(.footnote).foregroundColor(.secondary)
+        }
+    }
+
+    /// App checker: how many times each app was opened today. iPhone only lets
+    /// DO IT show this inside a Screen Time report, so the numbers are drawn by the report.
+    private var opensCard: some View {
+        Card {
+            Text("APP CHECKER").font(.caption.bold()).foregroundColor(doitGreen)
+            Text("How many times you opened each app today.").foregroundColor(.secondary)
+            DeviceActivityReport(.opens, filter: DeviceActivityFilter(
+                segment: .daily(during: DateInterval(start: Calendar.current.startOfDay(for: Date()), end: Date()))))
+                .frame(height: 320)
         }
     }
 

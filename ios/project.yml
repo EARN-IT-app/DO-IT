@@ -41,6 +41,7 @@ targets:
       - target: DOITMonitor
       - target: DOITShield
       - target: DOITShieldAction
+      - target: DOITReport
 
   DOITMonitor:
     type: app-extension
@@ -115,6 +116,25 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: DOIT
+
+  DOITReport:
+    type: app-extension
+    platform: iOS
+    sources: [Report, Shared]
+    info:
+      path: Report/Info.plist
+      properties:
+        CFBundleDisplayName: DO IT App Checker
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
+    entitlements:
+      path: Report/Report.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [group.io.github.wonderbread4912.doit]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.wonderbread4912.doit.report
 
 schemes:
   DOIT:
