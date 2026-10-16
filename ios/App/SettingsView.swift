@@ -8,9 +8,6 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @AppStorage("name", store: shared) private var name = ""
     @AppStorage("quotes", store: shared) private var quotes = true
-    @AppStorage("layout-order", store: shared) private var layoutOrder = ""
-    @AppStorage("layout-hidden", store: shared) private var layoutHidden = ""
-    @AppStorage("layout-chips", store: shared) private var layoutChips = true
 
     var body: some View {
         NavigationStack {
@@ -23,29 +20,11 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    Toggle("Shortcut buttons under the ring", isOn: $layoutChips)
-                    let order = Layout.order(layoutOrder)
-                    ForEach(Array(order.enumerated()), id: \.element) { i, id in
-                        HStack {
-                            Toggle(Layout.name(id), isOn: Binding(
-                                get: { !Layout.list(layoutHidden).contains(id) },
-                                set: { on in
-                                    var hidden = Layout.list(layoutHidden).filter { $0 != id }
-                                    if !on { hidden.append(id) }
-                                    layoutHidden = hidden.joined(separator: ",")
-                                }))
-                            Button { move(order, i, -1) } label: { Image(systemName: "chevron.up") }
-                                .disabled(i == 0).accessibilityLabel("Move \(Layout.name(id)) up")
-                            Button { move(order, i, 1) } label: { Image(systemName: "chevron.down") }
-                                .disabled(i == order.count - 1).accessibilityLabel("Move \(Layout.name(id)) down")
-                        }
-                        .buttonStyle(.borderless)
-                    }
-                    Button("Reset the layout") { layoutOrder = ""; layoutHidden = ""; layoutChips = true }
+                    NavigationLink("Home screen layout") { LayoutView() }
                 } header: {
                     Text("Home screen")
                 } footer: {
-                    Text("Turn cards off or move them up and down. Hiding a card doesn't turn it off. Your alarm and locks still work.")
+                    Text("Pick which cards you see and drag them into the order you like.")
                 }
                 Section {
                     Button("Change the apps I block", action: change)
@@ -70,11 +49,47 @@ struct SettingsView: View {
         .tint(doitGreen)
         .preferredColorScheme(.dark)
     }
+}
 
-    private func move(_ order: [String], _ i: Int, _ by: Int) {
-        var order = order
-        order.swapAt(i, i + by)
-        layoutOrder = order.joined(separator: ",")
+// Drag cards into order and turn them on or off.
+struct LayoutView: View {
+    @AppStorage("layout-order", store: shared) private var layoutOrder = ""
+    @AppStorage("layout-hidden", store: shared) private var layoutHidden = ""
+    @AppStorage("layout-chips", store: shared) private var layoutChips = true
+
+    var body: some View {
+        List {
+            Section {
+                Toggle("Shortcut buttons under the ring", isOn: $layoutChips)
+            }
+            Section {
+                ForEach(Layout.order(layoutOrder), id: \.self) { id in
+                    Toggle(Layout.name(id), isOn: Binding(
+                        get: { !Layout.list(layoutHidden).contains(id) },
+                        set: { on in
+                            var hidden = Layout.list(layoutHidden).filter { $0 != id }
+                            if !on { hidden.append(id) }
+                            layoutHidden = hidden.joined(separator: ",")
+                        }))
+                }
+                .onMove { from, to in
+                    var order = Layout.order(layoutOrder)
+                    order.move(fromOffsets: from, toOffset: to)
+                    layoutOrder = order.joined(separator: ",")
+                }
+            } header: {
+                Text("Cards")
+            } footer: {
+                Text("Hold the ≡ handle and drag a card up or down. Hiding a card doesn't turn it off. Your alarm and locks still work.")
+            }
+            Section {
+                Button("Reset the layout") { layoutOrder = ""; layoutHidden = ""; layoutChips = true }
+            }
+        }
+        // Always show the drag handles, so there's no Edit button to find first.
+        .environment(\.editMode, .constant(.active))
+        .navigationTitle("Home screen layout")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
