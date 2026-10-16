@@ -50,6 +50,8 @@ jobs:
           done
           xcrun simctl launch "$DEVICE" $ID -demo -demoAlarm; sleep 6
           xcrun simctl io "$DEVICE" screenshot screenshots/3-alarm.png
+          # Shrink them so the project doesn't grow by megabytes each run.
+          for f in screenshots/*.png; do sips -Z 1000 "$f" >/dev/null; done
           ls -la screenshots
       - name: Save the pictures
         run: |

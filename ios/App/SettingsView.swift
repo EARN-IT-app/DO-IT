@@ -48,6 +48,10 @@ struct SettingsView: View {
                 }
                 Section {
                     Button("Change the apps I block", action: change)
+                    if Limit.hasPending {
+                        Label("Your app changes start tomorrow.", systemImage: "clock.arrow.circlepath")
+                            .foregroundColor(doitGreen)
+                    }
                 } header: {
                     Text("Your limit")
                 } footer: {
@@ -80,25 +84,32 @@ struct LayoutView: View {
 
     var body: some View {
         List {
-            Section {
-                ForEach(Layout.order(layoutOrder), id: \.self) { id in
-                    Toggle(Layout.name(id), isOn: Binding(
-                        get: { !Layout.list(layoutHidden).contains(id) },
-                        set: { on in
-                            var hidden = Layout.list(layoutHidden).filter { $0 != id }
-                            if !on { hidden.append(id) }
-                            layoutHidden = hidden.joined(separator: ",")
-                        }))
+            ForEach(Layout.tabs, id: \.name) { tab in
+                Section {
+                    ForEach(Layout.order(layoutOrder).filter(tab.cards.contains), id: \.self) { id in
+                        Toggle(Layout.name(id), isOn: Binding(
+                            get: { !Layout.list(layoutHidden).contains(id) },
+                            set: { on in
+                                var hidden = Layout.list(layoutHidden).filter { $0 != id }
+                                if !on { hidden.append(id) }
+                                layoutHidden = hidden.joined(separator: ",")
+                            }))
+                    }
+                    .onMove { from, to in
+                        // Reorder this tab's cards, keeping the other tabs' cards where they are.
+                        let order = Layout.order(layoutOrder)
+                        var mine = order.filter(tab.cards.contains)
+                        mine.move(fromOffsets: from, toOffset: to)
+                        var it = mine.makeIterator()
+                        layoutOrder = order.map { tab.cards.contains($0) ? it.next()! : $0 }.joined(separator: ",")
+                    }
+                } header: {
+                    Text("\(tab.name) tab")
+                } footer: {
+                    if tab.name == Layout.tabs.last?.name {
+                        Text("Hold the ≡ handle and drag a card up or down. Hiding a card doesn't turn it off. Your alarm and locks still work.")
+                    }
                 }
-                .onMove { from, to in
-                    var order = Layout.order(layoutOrder)
-                    order.move(fromOffsets: from, toOffset: to)
-                    layoutOrder = order.joined(separator: ",")
-                }
-            } header: {
-                Text("Cards")
-            } footer: {
-                Text("Hold the ≡ handle and drag a card up or down. Hiding a card doesn't turn it off. Your alarm and locks still work.")
             }
             Section {
                 Button("Reset the layout") { layoutOrder = ""; layoutHidden = "" }
@@ -118,6 +129,8 @@ enum Layout {
     static let todayTab = ["goal"]
     static let focusTab = ["focus", "bedtime", "alarm"]
     static let weekTab = ["week", "opens"]
+    struct Tab { let name: String; let cards: [String] }
+    static let tabs = [Tab(name: "Today", cards: todayTab), Tab(name: "Focus", cards: focusTab), Tab(name: "Week", cards: weekTab)]
 
     static func list(_ saved: String) -> [String] { saved.split(separator: ",").map(String.init) }
 
