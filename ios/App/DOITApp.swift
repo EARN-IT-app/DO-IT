@@ -282,7 +282,7 @@ struct TodayView: View {
             })) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("MORNING ALARM").font(.caption.bold()).foregroundColor(doitGreen)
-                    Text("Keeps going off every \(MorningAlarm.gap) minutes until you take a photo of yourself in the mirror.")
+                    Text("Goes off every minute, with no snooze, until you get up and take a photo of yourself in the mirror.")
                         .foregroundColor(.secondary)
                 }
             }

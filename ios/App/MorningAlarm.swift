@@ -1,5 +1,6 @@
-// The morning alarm. It rings every few minutes for half an hour and only stops
-// for good once you take a photo of yourself in the mirror in DO IT.
+// The morning alarm. It rings every minute for half an hour and only stops
+// for good once you take a photo of yourself in the mirror in DO IT. There's no
+// snooze: the alarm's only button opens DO IT on the mirror photo screen.
 // On iOS 26 and later it uses real alarms (AlarmKit), which ring even on silent.
 // On older iPhones it falls back to loud notifications.
 import SwiftUI
@@ -11,11 +12,12 @@ import AppIntents
 
 enum MorningAlarm {
     /// Rings at the set time, then again every `gap` minutes, `rings` times in all.
-    static let rings = 10
-    static let gap = 3
+    static let rings = 30
+    static let gap = 1
     static var windowMinutes: Int { rings * gap }
     /// Alarms are set up this many days ahead, and topped up whenever DO IT opens.
-    static let daysAhead = 3
+    /// (Two days of rings fits under iPhone's limit of 64 waiting notifications.)
+    static let daysAhead = 2
 
     static var on: Bool {
         get { shared.bool(forKey: "alarmOn") }
@@ -101,7 +103,9 @@ enum MorningAlarm {
 @available(iOS 26.0, *)
 struct DOITAlarmInfo: AlarmMetadata {}
 
-/// The alarm's "Mirror photo" button: opens DO IT on the camera step.
+/// The alarm's only button: opens DO IT on the mirror photo screen. Apple requires
+/// a button that quiets the alarm, so this one also opens DO IT, where the video
+/// plays, and the alarm rings again a minute later until the photo is taken.
 @available(iOS 26.0, *)
 struct OpenMirrorPhoto: LiveActivityIntent {
     static var title: LocalizedStringResource = "Take the mirror photo"
@@ -128,9 +132,7 @@ enum RealAlarms {
 
         let alert = AlarmPresentation.Alert(
             title: "WAKE UP. Mirror photo to stop it.",
-            stopButton: AlarmButton(text: "Stop", textColor: .white, systemImageName: "stop.circle"),
-            secondaryButton: AlarmButton(text: "Mirror photo", textColor: .black, systemImageName: "camera.fill"),
-            secondaryButtonBehavior: .custom
+            stopButton: AlarmButton(text: "Mirror photo", textColor: .white, systemImageName: "camera.fill")
         )
         let attributes = AlarmAttributes<DOITAlarmInfo>(
             presentation: AlarmPresentation(alert: alert),
@@ -140,7 +142,7 @@ enum RealAlarms {
             let config = AlarmManager.AlarmConfiguration<DOITAlarmInfo>(
                 schedule: .fixed(t),
                 attributes: attributes,
-                secondaryIntent: OpenMirrorPhoto()
+                stopIntent: OpenMirrorPhoto()
             )
             _ = try? await manager.schedule(id: UUID(), configuration: config)
         }
