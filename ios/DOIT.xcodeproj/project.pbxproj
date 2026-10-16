@@ -16,6 +16,7 @@
 		40CF64ADE067FA03F0205631 /* MorningAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4EB0F32DB0739616699FCBA /* MorningAlarm.swift */; };
 		43B83CA46D27859AEB0030DE /* DOITReport.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F2FF3A7B64367093DDC140FD /* DOITReport.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4990375DA775BA75B569A453 /* OpensReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE876DD54A6FD98C9F399D52 /* OpensReport.swift */; };
+		4A232FF0A4428F85647BDC84 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96C1B3095CC93AA0C0A291A0 /* Theme.swift */; };
 		4A5D0710901634689BEDD61C /* Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCE5AC84C80878B224DF03 /* Monitor.swift */; };
 		4A61929700B5BB6CA0FEE18B /* AlarmVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF3355EF991707E7A5C9B6C /* AlarmVideo.swift */; };
 		4BBC0DB52E251716AAFB7DB2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C1255B1FD9747657A43C36 /* SettingsView.swift */; };
@@ -102,6 +103,7 @@
 		7FF8748AE7451C1940718DF8 /* DOITApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DOITApp.swift; sourceTree = "<group>"; };
 		90C119AD25F84932407884E1 /* ShieldAction.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShieldAction.entitlements; sourceTree = "<group>"; };
 		90F031732A6B5AFC79AE860B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		96C1B3095CC93AA0C0A291A0 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9A976B3A8B5E46A910DB1102 /* ShieldConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfig.swift; sourceTree = "<group>"; };
 		9AD1B2E5A6500AB8A3040715 /* DOITUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DOITUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DC4DF38B31051ECBFB7E9E5 /* StopSign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopSign.swift; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 				F5C1255B1FD9747657A43C36 /* SettingsView.swift */,
 				9DC4DF38B31051ECBFB7E9E5 /* StopSign.swift */,
 				74CE821E9B3878A6CA7F4237 /* Stretches.swift */,
+				96C1B3095CC93AA0C0A291A0 /* Theme.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -413,6 +416,7 @@
 				1789976C6A93E36DD40F5DF3 /* Shared.swift in Sources */,
 				89BC0094374AE4D544AE723A /* StopSign.swift in Sources */,
 				E3B16BCB23D98D8427A4FF9B /* Stretches.swift in Sources */,
+				4A232FF0A4428F85647BDC84 /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
