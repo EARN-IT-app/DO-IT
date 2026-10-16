@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DO IT alarm video</title>
+<style>
+  /* Plays the first 25 seconds of the "Just Do It" video over and over, with sound.
+     Used by the morning alarm on the website and in the iPhone app. */
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #player, iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #tap {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, .6); color: #000; border: 0; cursor: pointer;
+    font: 700 22px -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  #tap span { background: #00d26a; padding: 16px 26px; border-radius: 14px; }
+</style>
+</head>
+<body>
+<div id="player"></div>
+<button id="tap" type="button"><span>Tap for sound</span></button>
+<script>
+const CLIP_END = 25;
+let player = null, timer = null;
+const tell = (msg) => { try { parent.postMessage({ doit: msg }, "*"); } catch {} };
+
+function start() {
+  player.unMute();
+  player.setVolume(100);
+  player.seekTo(0, true);
+  player.playVideo();
+}
+
+window.onYouTubeIframeAPIReady = () => {
+  player = new YT.Player("player", {
+    videoId: "ZXsQAXx_ao0",
+    host: "https://www.youtube-nocookie.com",
+    playerVars: { autoplay: 1, playsinline: 1, controls: 0, rel: 0, modestbranding: 1, start: 0 },
+    events: {
+      onReady: () => {
+        start();
+        // If the browser blocked sound, show a button to start it with a tap.
+        setTimeout(() => {
+          if (player.getPlayerState() !== 1 || player.isMuted()) document.getElementById("tap").style.display = "flex";
+        }, 2000);
+        // Back to the start after 25 seconds, so it repeats.
+        timer = setInterval(() => {
+          if (player.getCurrentTime && player.getCurrentTime() >= CLIP_END) player.seekTo(0, true);
+        }, 250);
+      },
+      onStateChange: (e) => {
+        if (e.data === 1 && !player.isMuted()) { document.getElementById("tap").style.display = "none"; tell("playing"); }
+        if (e.data === 0) start();
+      },
+      onError: () => tell("error"),
+    },
+  });
+};
+
+document.getElementById("tap").onclick = () => { if (player) start(); };
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

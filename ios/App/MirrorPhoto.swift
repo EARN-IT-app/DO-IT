@@ -17,6 +17,11 @@ struct AlarmView: View {
             Text("GOOD MORNING.").font(.system(size: 40, weight: .black)).multilineTextAlignment(.center)
             Text("Get up, go to the mirror, and take a photo of yourself. The alarm keeps going off until you do.")
                 .multilineTextAlignment(.center).foregroundColor(.secondary)
+            if !camera {
+                AlarmVideo()
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
             if let message { Text(message).bold().foregroundColor(.red).multilineTextAlignment(.center) }
             Spacer()
             Button { camera = true } label: {

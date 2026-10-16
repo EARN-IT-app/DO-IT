@@ -125,6 +125,8 @@ select {
 .timein { width: 100%; min-height: 54px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); color: var(--fg); font: 700 22px var(--body); padding: 0 12px; margin-top: 8px; }
 #alarmSet { display: flex; flex-direction: column; gap: 8px; }
 #alarmSet[hidden] { display: none; }
+#alarmVideo { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+#alarmVideo iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 #mirrorPreview { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; }
 </style>
 </head>
@@ -173,6 +175,7 @@ select {
     <p class="eyebrow">Morning alarm</p>
     <p class="task">GOOD MORNING. Get up, go to the mirror, and take a photo of yourself.</p>
     <p class="note">The alarm keeps going until you do.</p>
+    <div class="video" id="alarmVideo"></div>
     <input type="file" id="mirrorPhoto" accept="image/*" capture="environment" hidden>
     <button class="btn" id="mirrorBtn" type="button">Open camera</button>
     <img id="mirrorPreview" alt="Your mirror photo" hidden>
@@ -476,10 +479,21 @@ function beep() {
     o.start(now + i * 0.25); o.stop(now + i * 0.25 + 0.2);
   }
 }
-function stopBeeping() { clearInterval(beepId); beepId = null; }
+// The first 25 seconds of the "Just Do It" video play on repeat while the alarm is going.
+// The beeping keeps going until the video's sound actually starts.
+function stopBeeping() {
+  clearInterval(beepId); beepId = null;
+  $("alarmVideo").innerHTML = "";
+}
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.doit === "playing") { clearInterval(beepId); beepId = null; }
+});
 
 function showRinging() {
   only("ringing");
+  if (!$("alarmVideo").firstChild) {
+    $("alarmVideo").innerHTML = '<iframe src="alarm-video.html" allow="autoplay; encrypted-media" title="Just Do It video"></iframe>';
+  }
   if (!beepId) { beep(); beepId = setInterval(beep, 1200); }
   if (navigator.vibrate) navigator.vibrate([400, 200, 400]);
 }
