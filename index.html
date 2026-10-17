@@ -662,9 +662,12 @@ document.querySelectorAll("[data-focus]").forEach((b) => {
     const m = Number(b.dataset.focus);
     if (!confirm("Focus for " + (m < 60 ? m + " minutes" : m / 60 + (m === 60 ? " hour" : " hours")) +
       "?\n\nYour apps lock right now. There's no way to cancel until the time is up.")) return;
+    const hadBreak = Number(store.get(SESSION_KEY) || 0) > Date.now();
     store.set(SESSION_KEY, "0");
     store.set(FOCUS_KEY, String(Date.now() + m * 60000));
     resume();
+    if (hadBreak && gateOn()) tellShortcut(0); // end the break in the Shortcut too
+
   };
 });
 
@@ -1006,6 +1009,8 @@ function resume() {
     const t = new Date(focusEnd()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     showBlocked("Focus mode", "Your apps are locked. Go get it done.", "Unlocks at " + t + ".", focusEnd, "go");
   } else if (bedtimeOn() && isNight()) {
+    // Bedtime ends a running break, in the Shortcut too.
+    if (session > Date.now()) { store.set(SESSION_KEY, "0"); if (gateOn()) tellShortcut(0); }
     const until = () => { const d = new Date(); if (d.getHours() >= BED_START) d.setDate(d.getDate() + 1); d.setHours(BED_END, 0, 0, 0); return d.getTime(); };
     showBlocked("Bedtime", "Put the phone down and sleep.", "Your apps unlock at 7 AM.", until, "up");
   } else if (session > Date.now()) {
